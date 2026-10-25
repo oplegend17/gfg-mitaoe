@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Any authenticated user created in Firebase Auth is an admin
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    // Open/closed switch. Students read it, only the admin changes it.
+    match /config/session {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // One document per device. Document ID = random device ID.
+    match /attendance/{deviceId} {
+      allow read: if isAdmin();
+
+      allow create: if deviceId.matches('^[A-Za-z0-9_-]{16,64}$')
+        && exists(/databases/$(database)/documents/config/session)
+        && get(/databases/$(database)/documents/config/session).data.open == true
+        && request.resource.data.keys().hasOnly(['createdAt'])
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+  }
+}

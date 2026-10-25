@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #fbfaf5;
+  --color-gfg: #2f8d46;
+  --color-gfg-deep: #1e6b33;
+  --color-gfg-tint: #e6f2e8;
+  --color-ink: #26292b;
+  --color-sky: #c9daf4;
+  --color-sun: #f5c842;
+  --color-alert: #c0392b;
+
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-pop: 6px 6px 0 0 var(--color-gfg-deep);
+  --shadow-pop-sm: 4px 4px 0 0 var(--color-gfg-deep);
+  --shadow-pop-ink: 5px 5px 0 0 var(--color-ink);
+
+  --animate-pop: pop 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+  --animate-tick: tick 0.35s ease-out both;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes tick {
+  0% { transform: translateY(-14%); opacity: 0.2; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+
+html, body, #root { min-height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-gfg);
+  outline-offset: 3px;
+}
+
+.check-path {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: draw 0.45s 0.25s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .check-path { stroke-dashoffset: 0; }
+}
