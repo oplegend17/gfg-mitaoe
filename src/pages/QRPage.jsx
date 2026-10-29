@@ -102,14 +102,30 @@ export default function QRPage() {
           <div className="flex flex-col justify-center space-y-6">
             <div>
               <span className="inline-block rounded-xl border-2 border-gfg/40 bg-gfg-tint px-3.5 py-1 text-xs font-extrabold uppercase tracking-widest text-gfg-deep">
-                Official Orientation 2026
+                Exclusive Session for MITAOE Students
               </span>
               <h1 className="mt-3 text-4xl font-extrabold leading-tight text-ink sm:text-5xl">
-                Welcome to <span className="text-gfg">GeeksforGeeks</span>
+                Flo101 <span className="text-gfg">Campus Session</span>
               </h1>
-              <p className="mt-2 text-lg font-semibold text-ink/75">
-                {EVENT.chapter} · {EVENT.college}
+              <p className="mt-1 text-lg font-bold text-gfg-deep">
+                Learn • Practice • Build with AI
               </p>
+              <p className="mt-0.5 text-sm font-medium text-ink/70">
+                Your AI-powered learning & building partner
+              </p>
+
+              {/* Perk Callout */}
+              <div className="mt-4 rounded-2xl border-[2.5px] border-ink bg-amber-50 p-3.5 shadow-pop-sm">
+                <p className="text-xs font-extrabold uppercase tracking-wider text-ink/60">
+                  Exclusive Attendee Perk
+                </p>
+                <p className="text-base font-extrabold text-ink">
+                  🎟️ Get FREE access worth <span className="text-gfg-deep underline">$200+</span>
+                </p>
+                <p className="mt-0.5 text-xs font-semibold text-ink/70">
+                  5 top-tier AI tools for 2 months full access!
+                </p>
+              </div>
             </div>
 
             {isAdmin && (

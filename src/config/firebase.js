@@ -21,9 +21,14 @@ export const PUBLIC_URL =
   import.meta.env.VITE_PUBLIC_URL || (typeof window !== "undefined" ? window.location.origin : "");
 
 export const EVENT = {
+  title: "Flo101 Campus Session",
+  tagline: "Learn • Practice • Build",
+  subtitle: "Your AI-powered learning & building partner",
   chapter: "Campus Body",
-  college: "MIT Academy of Engineering",
-  date: "26 October",
-  time: "5 PM onwards",
-  venue: "D011",
+  college: "MITAOE",
+  date: "29 Oct 2026",
+  day: "Thursday",
+  time: "5:00 PM onwards",
+  venue: "D109, MITAOE",
+  perk: "Free Access worth $200+",
 };

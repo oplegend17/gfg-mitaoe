@@ -49,11 +49,11 @@ export function exportAttendeesToExcel(attendees, filename) {
 
   // Create workbook and append sheet
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Orientation Attendance");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Flo101 Attendance");
 
   // Determine filename with current date stamp
   const today = new Date().toISOString().slice(0, 10);
-  const finalFilename = filename || `GFG_MITAOE_Orientation_Attendance_${today}.xlsx`;
+  const finalFilename = filename || `Flo101_MITAOE_Attendance_${today}.xlsx`;
 
   // Write and trigger browser download
   XLSX.writeFile(workbook, finalFilename);

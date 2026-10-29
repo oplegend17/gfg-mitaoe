@@ -99,7 +99,7 @@ export default function Student() {
           <section className="mt-8 w-full rounded-3xl border-[3px] border-gfg-deep bg-white px-6 py-12 text-center shadow-pop">
             <div className="flex flex-col items-center gap-4">
               <div className="h-12 w-12 animate-spin rounded-full border-[5px] border-gfg-tint border-t-gfg" />
-              <p className="text-base font-bold text-ink">Connecting to orientation session...</p>
+              <p className="text-base font-bold text-ink">Connecting to Flo101 Campus Session...</p>
             </div>
           </section>
         )}
@@ -111,8 +111,8 @@ export default function Student() {
               <StatusBadge tone="warn" />
               <h1 className="mt-6 text-3xl font-extrabold text-ink">Attendance is Closed</h1>
               <p className="mx-auto mt-3 max-w-sm text-base font-medium text-ink/75">
-                The organizers haven't opened attendance yet, or the session has ended.
-                Please check with a volunteer at the venue.
+                Attendance for Flo101 hasn't opened yet or has ended.
+                Please check with an organizer at {EVENT.venue}.
               </p>
               <button
                 onClick={retry}
@@ -133,7 +133,8 @@ export default function Student() {
                 You're in, {submittedInfo?.name || "Friend"}!
               </h1>
               <p className="mx-auto mt-2 max-w-sm text-base font-medium text-ink/80">
-                Your attendance is successfully recorded. Enjoy the GeeksforGeeks orientation!
+                Your attendance is recorded for <span className="font-bold text-gfg-deep">Flo101 Campus Session</span>.
+                Enjoy the session and get ready to claim your $200+ free AI tools access! ⚡
               </p>
 
               {submittedInfo && (
@@ -165,7 +166,7 @@ export default function Student() {
               <StatusBadge tone="ok" />
               <h1 className="mt-6 text-3xl font-extrabold text-gfg">Already Counted</h1>
               <p className="mx-auto mt-2 max-w-sm text-base font-medium text-ink/80">
-                This device has already recorded attendance for this orientation session.
+                This phone has already checked in for the Flo101 session.
               </p>
 
               {submittedInfo?.name && (
@@ -184,15 +185,26 @@ export default function Student() {
             className="mt-8 w-full rounded-3xl border-[3px] border-gfg-deep bg-white p-6 sm:p-8 shadow-pop"
           >
             {/* Form Title Banner */}
-            <div className="flex items-center justify-between border-b border-gfg/30 pb-4">
-              <div>
+            <div className="flex flex-col border-b border-gfg/30 pb-4">
+              <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-gfg/40 bg-gfg-tint px-3 py-0.5 text-xs font-extrabold uppercase tracking-wide text-gfg-deep">
                   <Sparkle className="h-3.5 w-3.5" />
-                  Orientation 2026
+                  Exclusive Session
                 </span>
-                <h1 className="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">
-                  Attendance Check-in
-                </h1>
+                <span className="text-xs font-bold text-ink/60">
+                  {EVENT.venue}
+                </span>
+              </div>
+              <h1 className="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">
+                Flo101 Campus Session
+              </h1>
+              <p className="mt-1 text-sm font-semibold text-gfg-deep">
+                Learn • Practice • Build with AI
+              </p>
+              
+              {/* Perk Callout */}
+              <div className="mt-3 rounded-xl border-2 border-sun bg-amber-50 px-3.5 py-2 text-xs font-bold text-ink">
+                🎁 Attend & unlock <span className="text-gfg-deep font-extrabold">FREE access worth $200+</span> (5 AI tools for 2 months)!
               </div>
             </div>
 
@@ -302,7 +314,7 @@ export default function Student() {
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
                 maxLength={400}
-                placeholder="What are you hoping to learn or gain from GfG? Any questions for the team?"
+                placeholder="What are you most excited to learn or build with Flo101? Any questions for the team?"
                 className="mt-1.5 w-full rounded-2xl border-2 border-ink/30 bg-paper px-4 py-3 text-sm font-medium text-ink placeholder:text-ink/40 focus:border-gfg focus:bg-white focus:outline-none transition-colors"
               />
             </div>
@@ -324,7 +336,7 @@ export default function Student() {
             </button>
 
             <p className="mt-3 text-center text-xs font-semibold text-ink/50">
-              Your response is securely recorded for the GfG MITAOE orientation count.
+              Your response is securely recorded for the Flo101 MITAOE session.
             </p>
           </form>
         )}

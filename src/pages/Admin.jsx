@@ -199,7 +199,7 @@ function Dashboard({ user, onLogout }) {
           <section>
             <h1 className="text-3xl font-extrabold leading-tight sm:text-5xl">
               <span className="block text-ink">Students Checked In</span>
-              <span className="block text-gfg">GfG Orientation</span>
+              <span className="block text-gfg">Flo101 Session</span>
             </h1>
 
             <div className="pointer-events-none mt-3 flex select-none items-baseline gap-4">
