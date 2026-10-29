@@ -204,7 +204,7 @@ export default function Student() {
               
               {/* Perk Callout */}
               <div className="mt-3 rounded-xl border-2 border-sun bg-amber-50 px-3.5 py-2 text-xs font-bold text-ink">
-                🎁 Attend & unlock <span className="text-gfg-deep font-extrabold">FREE access worth $200+</span> (5 AI tools for 2 months)!
+                🎁 Attend & unlock <span className="text-gfg-deep font-extrabold">FREE access worth $200+</span> (for 2 months)!
               </div>
             </div>
 
