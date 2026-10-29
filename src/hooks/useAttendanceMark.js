@@ -79,7 +79,7 @@ export function useAttendanceMark() {
       const dataToSave = {
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
-        branch: formData.branch,
+        branch: formData.branch.trim(),
         year: formData.year,
         feedback: formData.feedback ? formData.feedback.trim() : "",
         createdAt: serverTimestamp(),

@@ -62,8 +62,8 @@ export default function Student() {
       setValidationError("Please enter a valid email address.");
       return;
     }
-    if (!branch) {
-      setValidationError("Please select your branch.");
+    if (!branch.trim()) {
+      setValidationError("Please enter your branch.");
       return;
     }
     if (!year) {
@@ -245,29 +245,21 @@ export default function Student() {
               <label htmlFor="student-branch" className="block text-sm font-bold text-ink">
                 Branch <span className="text-alert">*</span>
               </label>
-              <div className="relative mt-1.5">
-                <select
-                  id="student-branch"
-                  required
-                  value={branch}
-                  onChange={(e) => setBranch(e.target.value)}
-                  className="w-full appearance-none rounded-2xl border-2 border-ink/30 bg-paper px-4 py-3 text-base font-semibold text-ink focus:border-gfg focus:bg-white focus:outline-none transition-colors cursor-pointer"
-                >
-                  <option value="" disabled>
-                    Select your branch...
-                  </option>
-                  {BRANCHES.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-ink/70">
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
+              <input
+                id="student-branch"
+                type="text"
+                required
+                list="branch-suggestions"
+                value={branch}
+                onChange={(e) => setBranch(e.target.value)}
+                placeholder="e.g. Computer Engineering, IT, ENTC..."
+                className="mt-1.5 w-full rounded-2xl border-2 border-ink/30 bg-paper px-4 py-3 text-base font-semibold text-ink placeholder:text-ink/40 focus:border-gfg focus:bg-white focus:outline-none transition-colors"
+              />
+              <datalist id="branch-suggestions">
+                {BRANCHES.map((b) => (
+                  <option key={b} value={b} />
+                ))}
+              </datalist>
             </div>
 
             {/* Field: Year of Study */}
