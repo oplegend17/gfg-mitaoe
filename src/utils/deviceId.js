@@ -1,6 +1,7 @@
 // Random ID kept in the browser. Not derived from any personal/device info.
 const KEY = "gfg_orientation_device_id";
 const MARKED_KEY = "gfg_orientation_marked";
+const INFO_KEY = "gfg_student_info";
 
 function randomId() {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID().replace(/-/g, "");
@@ -31,9 +32,30 @@ export function wasMarkedBefore() {
   }
 }
 
-export function rememberMarked() {
+export function rememberMarked(info) {
   try {
     localStorage.setItem(MARKED_KEY, "1");
+    if (info) {
+      localStorage.setItem(INFO_KEY, JSON.stringify(info));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+export function getSavedStudentInfo() {
+  try {
+    const raw = localStorage.getItem(INFO_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearMarked() {
+  try {
+    localStorage.removeItem(MARKED_KEY);
+    localStorage.removeItem(INFO_KEY);
   } catch {
     /* ignore */
   }

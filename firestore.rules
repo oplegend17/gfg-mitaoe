@@ -17,10 +17,15 @@ service cloud.firestore {
     match /attendance/{deviceId} {
       allow read: if isAdmin();
 
+      // Attendance registration validation
       allow create: if deviceId.matches('^[A-Za-z0-9_-]{16,64}$')
         && exists(/databases/$(database)/documents/config/session)
         && get(/databases/$(database)/documents/config/session).data.open == true
-        && request.resource.data.keys().hasOnly(['createdAt'])
+        && request.resource.data.keys().hasAll(['name', 'email', 'branch', 'year', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 100
+        && request.resource.data.email is string && request.resource.data.email.size() > 0 && request.resource.data.email.size() <= 150
+        && request.resource.data.branch is string
+        && request.resource.data.year is string
         && request.resource.data.createdAt == request.time;
 
       allow update: if false;
