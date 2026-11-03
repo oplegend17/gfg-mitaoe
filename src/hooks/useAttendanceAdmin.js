@@ -16,6 +16,7 @@ export function useAttendanceAdmin(enabled) {
   const [count, setCount] = useState(0);
   const [attendees, setAttendees] = useState([]);
   const [open, setOpen] = useState(null); // null = not loaded yet
+  const [resultsPublished, setResultsPublishedState] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -43,10 +44,19 @@ export function useAttendanceAdmin(enabled) {
       (e) => setError(e.message)
     );
 
-    // Listen to session status
+    // Listen to session status and results release status
     const unsubSession = onSnapshot(
       doc(db, "config", "session"),
-      (snap) => setOpen(snap.exists() ? snap.data().open === true : false),
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setOpen(data.open === true);
+          setResultsPublishedState(data.resultsPublished === true);
+        } else {
+          setOpen(false);
+          setResultsPublishedState(false);
+        }
+      },
       (e) => setError(e.message)
     );
 
@@ -58,6 +68,14 @@ export function useAttendanceAdmin(enabled) {
 
   const setSessionOpen = useCallback(async (value) => {
     await setDoc(doc(db, "config", "session"), { open: value, updatedAt: serverTimestamp() }, { merge: true });
+  }, []);
+
+  const setResultsPublished = useCallback(async (value) => {
+    await setDoc(
+      doc(db, "config", "session"),
+      { resultsPublished: value, resultsUpdatedAt: serverTimestamp() },
+      { merge: true }
+    );
   }, []);
 
   const resetCount = useCallback(async () => {
@@ -92,5 +110,14 @@ export function useAttendanceAdmin(enabled) {
     setCount(0);
   }, []);
 
-  return { count, attendees, open, error, setSessionOpen, resetCount };
+  return {
+    count,
+    attendees,
+    open,
+    resultsPublished,
+    error,
+    setSessionOpen,
+    setResultsPublished,
+    resetCount,
+  };
 }

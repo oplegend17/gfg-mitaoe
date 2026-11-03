@@ -95,7 +95,16 @@ function Denied({ email, onLogout }) {
 }
 
 function Dashboard({ user, onLogout }) {
-  const { count, attendees, open, error, setSessionOpen, resetCount } = useAttendanceAdmin(true);
+  const {
+    count,
+    attendees,
+    open,
+    resultsPublished,
+    error,
+    setSessionOpen,
+    setResultsPublished,
+    resetCount,
+  } = useAttendanceAdmin(true);
   const [busy, setBusy] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [branchFilter, setBranchFilter] = useState("ALL");
@@ -239,6 +248,16 @@ function Dashboard({ user, onLogout }) {
                 <span>Projector QR (/qr) ↗</span>
               </Link>
 
+              <Link
+                to="/results"
+                target="_blank"
+                className={`${btnBase} ${
+                  resultsPublished ? "bg-gfg text-white" : "bg-sun text-ink"
+                } inline-flex items-center gap-1.5`}
+              >
+                <span>{resultsPublished ? "View Results (/results) ↗" : "Prank Mode (/results) ↗"}</span>
+              </Link>
+
               <button
                 onClick={() => exportAttendeesToExcel(attendees)}
                 disabled={attendees.length === 0}
@@ -273,6 +292,56 @@ function Dashboard({ user, onLogout }) {
             </div>
           </section>
         </div>
+
+        {/* Recruitment Results & Prank Mode Control Card */}
+        <section className="mt-10 rounded-3xl border-[3px] border-ink bg-white p-6 shadow-pop-ink">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="text-2xl">🎭</span>
+                <h2 className="text-xl font-extrabold text-ink sm:text-2xl">
+                  Recruitment Verdict & Prank Controller (/results)
+                </h2>
+                <span
+                  className={`rounded-full border-2 border-ink px-3 py-0.5 text-xs font-extrabold uppercase ${
+                    resultsPublished
+                      ? "bg-gfg text-white"
+                      : "bg-alert text-white animate-pulse"
+                  }`}
+                >
+                  {resultsPublished ? "✓ Results Live for All Students" : "⚡ Prank Glitch Mode Active"}
+                </span>
+              </div>
+              <p className="mt-2 text-xs sm:text-sm font-semibold text-ink/75 max-w-2xl">
+                {resultsPublished
+                  ? "The official recruitment verdict (Tech Team & Management Team) is revealed and accessible to students on /results."
+                  : "Prank Mode is ON: When students open /results, they see an authentic glitchy terminal, broken decryption screen, and fake server crash!"}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                to="/results"
+                target="_blank"
+                className={`${btnBase} bg-paper text-ink inline-flex items-center gap-1.5`}
+              >
+                <span>Open /results ↗</span>
+              </Link>
+
+              <button
+                disabled={busy}
+                onClick={() => run(() => setResultsPublished(!resultsPublished))}
+                className={`${btnBase} ${
+                  resultsPublished
+                    ? "bg-alert text-white"
+                    : "bg-gfg text-white"
+                }`}
+              >
+                {resultsPublished ? "Lock & Activate Prank Mode" : "Release Official Results 🚀"}
+              </button>
+            </div>
+          </div>
+        </section>
 
         {/* Attendee Roster Section */}
         <section className="mt-12 w-full rounded-3xl border-[3px] border-gfg-deep bg-white p-5 sm:p-8 shadow-pop">
