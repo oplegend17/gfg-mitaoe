@@ -303,43 +303,7 @@ export default function ResultsView() {
           ))}
         </div>
 
-        {/* Official Verification Sign-off Stamp (Directly from PDF document) */}
-        <section className="mt-12 rounded-3xl border-[3px] border-ink bg-white p-6 sm:p-8 shadow-pop-ink">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase text-ink/60">
-            <Sparkle className="h-4 w-4 text-gfg" />
-            OFFICIAL VERIFICATION & AUTHORITY STAMP
-          </div>
-
-          <div className="mt-4 grid gap-4 border-t-2 border-ink/10 pt-4 sm:grid-cols-3">
-            <div className="rounded-2xl border-2 border-ink/20 bg-paper p-4">
-              <p className="text-[11px] font-bold uppercase text-ink/50">Technical Lead</p>
-              <p className="mt-1 text-sm font-extrabold text-ink">
-                {RECRUITMENT_INFO.technicalLead}
-              </p>
-              <p className="text-xs font-medium text-gfg-deep">GeeksforGeeks Campus Body</p>
-            </div>
-
-            <div className="rounded-2xl border-2 border-ink/20 bg-paper p-4">
-              <p className="text-[11px] font-bold uppercase text-ink/50">Final Verdict By</p>
-              <p className="mt-1 text-sm font-extrabold text-ink">
-                {RECRUITMENT_INFO.campusLead}
-              </p>
-              <p className="text-xs font-medium text-gfg-deep">Campus Lead, MITAOE</p>
-            </div>
-
-            <div className="rounded-2xl border-2 border-ink/20 bg-paper p-4">
-              <p className="text-[11px] font-bold uppercase text-ink/50">Recruiting Body</p>
-              <p className="mt-1 text-sm font-extrabold text-ink">
-                GFG CAMPUS BODY / MITAOE
-              </p>
-              <p className="text-xs font-medium text-ink/60">{RECRUITMENT_INFO.college}</p>
-            </div>
-          </div>
-
-          <p className="mt-5 text-center text-xs font-semibold text-ink/60">
-            GFG CAMPUS BODY / MITAOE • RECRUITMENT VERDICT 2026 • ALL RIGHTS RESERVED
-          </p>
-        </section>
+      
 
         {/* Footer */}
         <footer className="mt-8 flex flex-wrap items-center justify-between border-t border-gfg/30 pt-4 text-xs font-bold text-ink/60">

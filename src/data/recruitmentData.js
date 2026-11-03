@@ -9,7 +9,7 @@ export const RECRUITMENT_INFO = {
   organization: "GFG Campus Body",
   college: "MIT Academy of Engineering",
   campusLead: "Ajinkya Magar",
-  technicalLead: "Atharva Baodhankar (TY)",
+  technicalLead: "Technical Secretariat",
 };
 
 export const RECRUITMENT_TEAMS = [
