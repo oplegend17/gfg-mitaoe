@@ -1,0 +1,456 @@
+{
+  "leads": [
+    {
+      "domain": "AI / ML",
+      "role": "Lead",
+      "name": "Vaishnavi Bade",
+      "year": "Second Year",
+      "branch": "AI&ML",
+      "status": "confirmed"
+    },
+    {
+      "domain": "Web & Product",
+      "role": "Lead",
+      "name": "Vishal Sanjay Daregave",
+      "year": "Second Year",
+      "branch": "Software engineering",
+      "status": "confirmed"
+    },
+    {
+      "domain": "DSA",
+      "role": "Lead",
+      "name": "Abhishree Nalgintwar",
+      "year": "Second Year",
+      "branch": "Computer engineering",
+      "status": "confirmed"
+    },
+    {
+      "domain": "DSA & Competitive Programming",
+      "role": "Lead",
+      "name": "Darshan Bari",
+      "year": "Second Year",
+      "branch": "Computer Engineering",
+      "status": "confirmed"
+    },
+    {
+      "domain": "Systems, IoT & Cloud",
+      "role": "Lead",
+      "name": "Suraj Dhondappa Rathod",
+      "year": "Second Year",
+      "branch": "Information technology",
+      "status": "confirmed"
+    },
+    {
+      "domain": "Blockchain & Security",
+      "role": "Lead",
+      "name": "Bhoomi Sengar",
+      "year": "Second Year",
+      "branch": "cse(Aiml)",
+      "status": "confirmed"
+    },
+    {
+      "domain": "Hackathons & SIH",
+      "role": "Lead",
+      "name": "Pranav Chopade",
+      "year": "Second Year",
+      "branch": "AIML",
+      "status": "confirmed"
+    },
+    {
+      "domain": "Open Source and Projects",
+      "role": "Lead",
+      "name": "Krishna Rameshwar Mishra",
+      "year": "Second Year",
+      "branch": "Software engineering",
+      "status": "confirmed"
+    },
+    {
+      "domain": "Events, Outreach & Community",
+      "role": "Lead",
+      "name": "Shruti Sahu",
+      "year": "First Year",
+      "branch": "Computer Engineering",
+      "status": "confirmed"
+    },
+    {
+      "domain": "Product & Projects",
+      "role": "Lead",
+      "name": "Shardul Deshmukh",
+      "year": "First Year",
+      "branch": "CSE(DS)",
+      "status": "Pending confirmation"
+    }
+  ],
+  "members": [
+    {
+      "srNo": 1,
+      "name": "Mehul Patil",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 2,
+      "name": "Manmath Maroti Kornule",
+      "year": "Third Year"
+    },
+    {
+      "srNo": 3,
+      "name": "Pranav Kishor Kulkarni",
+      "year": "First Year"
+    },
+    {
+      "srNo": 4,
+      "name": "Dhruv Wadyalkar",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 5,
+      "name": "Kunal Sharad Badgujar",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 6,
+      "name": "Sarth Ingale",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 7,
+      "name": "Sneha Gurav",
+      "year": "Third Year"
+    },
+    {
+      "srNo": 8,
+      "name": "Dhruv Ghewade",
+      "year": "First Year"
+    },
+    {
+      "srNo": 9,
+      "name": "Sanchita Chavan",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 10,
+      "name": "Shardul Deshmukh",
+      "year": "First Year"
+    },
+    {
+      "srNo": 11,
+      "name": "Yash Sandip Ingale",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 12,
+      "name": "Paras Patil",
+      "year": "First Year"
+    },
+    {
+      "srNo": 13,
+      "name": "Sarthak Suhas Kare",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 14,
+      "name": "Sayali Suresh Sandur",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 15,
+      "name": "Parth Rajesh Sankhe",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 16,
+      "name": "Manthan Katojwar",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 17,
+      "name": "Tanishq Deshmukh",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 18,
+      "name": "Om Vyas",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 19,
+      "name": "Suhana Mohanty",
+      "year": "First Year"
+    },
+    {
+      "srNo": 20,
+      "name": "Teemay Deshbhratar",
+      "year": "First Year"
+    },
+    {
+      "srNo": 21,
+      "name": "Aarya Joshi",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 22,
+      "name": "Suraj Patil",
+      "year": "First Year"
+    },
+    {
+      "srNo": 23,
+      "name": "Rashvi Umare",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 24,
+      "name": "Ishant Narendra Raut",
+      "year": "First Year"
+    },
+    {
+      "srNo": 25,
+      "name": "Mayuresh Sunil Joshi",
+      "year": "First Year"
+    },
+    {
+      "srNo": 26,
+      "name": "Bhavesh Baviskar",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 27,
+      "name": "Swapnali Sandip Chavan",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 28,
+      "name": "Prasad K. Patil",
+      "year": "First Year"
+    },
+    {
+      "srNo": 29,
+      "name": "Tejal Aher",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 30,
+      "name": "Pranav Sharad Shirude",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 31,
+      "name": "Aditya Dipul Kasar",
+      "year": "First Year"
+    },
+    {
+      "srNo": 32,
+      "name": "Anant Madarkar",
+      "year": "First Year"
+    },
+    {
+      "srNo": 33,
+      "name": "Ayush Radhesham Kulkarni",
+      "year": "First Year"
+    },
+    {
+      "srNo": 34,
+      "name": "Rituraj Katkhede",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 35,
+      "name": "Kalyani Chintawar",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 36,
+      "name": "Parth Gopal Patil",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 37,
+      "name": "Pranav Sable",
+      "year": "First Year"
+    },
+    {
+      "srNo": 38,
+      "name": "Shiv Sasane",
+      "year": "First Year"
+    },
+    {
+      "srNo": 39,
+      "name": "Siddharth Kumbhar",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 40,
+      "name": "Armaan Shaikh",
+      "year": "First Year"
+    },
+    {
+      "srNo": 41,
+      "name": "Madhur Jitesh Khandelwal",
+      "year": "First Year"
+    },
+    {
+      "srNo": 42,
+      "name": "Harshali Nimje",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 43,
+      "name": "Aditya bhongale",
+      "year": "First Year"
+    },
+    {
+      "srNo": 44,
+      "name": "Atharv Kolekar",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 45,
+      "name": "Rehan shaikh",
+      "year": "First Year"
+    },
+    {
+      "srNo": 46,
+      "name": "Mohak Khandelwal",
+      "year": "First Year"
+    },
+    {
+      "srNo": 47,
+      "name": "Rushil Charpe",
+      "year": "First Year"
+    },
+    {
+      "srNo": 48,
+      "name": "Yutika Patil",
+      "year": "First Year"
+    },
+    {
+      "srNo": 49,
+      "name": "Sidharath Sudhakar Kutal",
+      "year": "First Year"
+    },
+    {
+      "srNo": 50,
+      "name": "Kartiksingh Rajput",
+      "year": "First Year"
+    },
+    {
+      "srNo": 51,
+      "name": "Samruddhi Gokuldas Borude",
+      "year": "First Year"
+    },
+    {
+      "srNo": 52,
+      "name": "Darsh Santosh Lohe",
+      "year": "First Year"
+    },
+    {
+      "srNo": 53,
+      "name": "Ayush Parate",
+      "year": "First Year"
+    },
+    {
+      "srNo": 54,
+      "name": "Suraj Ravindra Pawar",
+      "year": "First Year"
+    },
+    {
+      "srNo": 55,
+      "name": "Akshara Pravin Nikam",
+      "year": "First Year"
+    },
+    {
+      "srNo": 56,
+      "name": "Ambika Popat Savant",
+      "year": "First Year"
+    },
+    {
+      "srNo": 57,
+      "name": "Tirth Pise",
+      "year": "First Year"
+    },
+    {
+      "srNo": 58,
+      "name": "Shivang Gupta",
+      "year": "First Year"
+    },
+    {
+      "srNo": 59,
+      "name": "Lavanya Yogesh Suple",
+      "year": "First Year"
+    },
+    {
+      "srNo": 60,
+      "name": "Sharvari Ratnadip Chavan",
+      "year": "First Year"
+    },
+    {
+      "srNo": 61,
+      "name": "Rohan Saxena",
+      "year": "First Year"
+    },
+    {
+      "srNo": 62,
+      "name": "Krishna Waghchaure",
+      "year": "First Year"
+    },
+    {
+      "srNo": 63,
+      "name": "Rishikesh Talekar",
+      "year": "First Year"
+    },
+    {
+      "srNo": 64,
+      "name": "Rima Vishwakarma",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 65,
+      "name": "Sarthak Patil",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 66,
+      "name": "Tanvi Belhekar",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 67,
+      "name": "Srushti Dange",
+      "year": "Second Year"
+    },
+    {
+      "srNo": 68,
+      "name": "Dhruv Nandkishor Bhamare",
+      "year": "First Year"
+    },
+    {
+      "srNo": 69,
+      "name": "Aniket Shinde",
+      "year": "Member"
+    },
+    {
+      "srNo": 70,
+      "name": "Shrinivas Ashturkar",
+      "year": "First Year"
+    },
+    {
+      "srNo": 71,
+      "name": "Shreyash Sawargave",
+      "year": "Member"
+    },
+    {
+      "srNo": 72,
+      "name": "Yash Shendurkar",
+      "year": "Member"
+    },
+    {
+      "srNo": 73,
+      "name": "Shourya Pal",
+      "year": "Member"
+    },
+    {
+      "srNo": 74,
+      "name": "Dhiraj Patil",
+      "year": "Member"
+    }
+  ]
+}

@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import confetti from "canvas-confetti";
 import Brand from "./Brand.jsx";
-import { CornerTriangles, DotGrid, Sparkle } from "./Decor.jsx";
+import { CornerTriangles, DotGrid } from "./Decor.jsx";
 import { RECRUITMENT_INFO, RECRUITMENT_TEAMS } from "../data/recruitmentData.js";
+import { SUB_TEAM_LEADS, SUB_TEAM_MEMBERS } from "../data/subTeamData.js";
 
 export default function ResultsView() {
   const [selectedTeamTab, setSelectedTeamTab] = useState("all");
@@ -19,7 +21,7 @@ export default function ResultsView() {
     });
   };
 
-  // Search through all candidate names
+  // Search through all candidate names (including sub-team leads & sub-team members)
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (!query.trim()) {
@@ -30,24 +32,60 @@ export default function ResultsView() {
     const clean = query.trim().toLowerCase();
     let found = null;
 
-    for (const team of RECRUITMENT_TEAMS) {
-      for (const group of team.groups) {
-        for (const member of group.members) {
-          if (member.name.toLowerCase().includes(clean)) {
-            found = {
-              name: member.name,
-              year: member.year,
-              rank: member.rank,
-              role: member.role,
-              teamName: team.name,
-              shortTeam: team.shortName,
-            };
-            break;
+    // Check Sub Team Leads
+    for (const lead of SUB_TEAM_LEADS) {
+      if (lead.name.toLowerCase().includes(clean)) {
+        found = {
+          name: lead.name,
+          year: lead.year,
+          rank: "LEAD",
+          role: `${lead.domain} (${lead.role || "Lead"})`,
+          teamName: "Sub Team Leads",
+          shortTeam: "Sub Team",
+        };
+        break;
+      }
+    }
+
+    // Check Core Recruitment Teams (Tech, Management, Social)
+    if (!found) {
+      for (const team of RECRUITMENT_TEAMS) {
+        for (const group of team.groups) {
+          for (const member of group.members) {
+            if (member.name.toLowerCase().includes(clean)) {
+              found = {
+                name: member.name,
+                year: member.year,
+                rank: member.rank,
+                role: member.role,
+                teamName: team.name,
+                shortTeam: team.shortName,
+              };
+              break;
+            }
           }
+          if (found) break;
         }
         if (found) break;
       }
-      if (found) break;
+    }
+
+    // Check Sub Team Members
+    if (!found) {
+      for (const member of SUB_TEAM_MEMBERS) {
+        if (member.name.toLowerCase().includes(clean)) {
+          found = {
+            name: member.name,
+            year: member.year,
+            rank: `#${member.srNo}`,
+            role: "Sub Team Member",
+            teamName: "Sub Team Technical & Community",
+            shortTeam: "Sub Team",
+            isSubTeamMember: true,
+          };
+          break;
+        }
+      }
     }
 
     setSearchResult(found);
@@ -61,6 +99,8 @@ export default function ResultsView() {
     selectedTeamTab === "all"
       ? RECRUITMENT_TEAMS
       : RECRUITMENT_TEAMS.filter((t) => t.id === selectedTeamTab);
+
+  const showSubTeamSection = selectedTeamTab === "all" || selectedTeamTab === "subteam";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-paper px-4 pb-16 pt-8 text-ink sm:px-6">
@@ -109,7 +149,7 @@ export default function ResultsView() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search candidate name (e.g. Omkar, Aryan, Tanay, Vihaan...)"
+                placeholder="Search candidate name (e.g. Vaishnavi, Vishal, Abhishree, Omkar...)"
                 className="w-full rounded-2xl border-2 border-ink/30 bg-paper py-3 pl-11 pr-4 text-sm font-semibold text-ink placeholder:text-ink/40 focus:border-gfg focus:bg-white focus:outline-none transition-colors"
               />
               <svg
@@ -150,18 +190,28 @@ export default function ResultsView() {
                           Congratulations, {searchResult.name}! 🎉
                         </p>
                         <p className="text-xs font-semibold text-ink/75">
-                          Selected for <span className="font-extrabold text-ink">{searchResult.teamName}</span> ({searchResult.year} Intake{searchResult.role && searchResult.role !== "SELECTED" ? ` • ${searchResult.role}` : ""})
+                          Selected for <span className="font-extrabold text-ink">{searchResult.teamName}</span> ({searchResult.year ? `${searchResult.year} • ` : ""}{searchResult.role})
                         </p>
                       </div>
                     </div>
-                    <span className="rounded-xl border border-gfg bg-white px-3 py-1 font-mono text-xs font-extrabold text-gfg-deep">
-                      Rank #{searchResult.rank}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-xl border border-gfg bg-white px-3 py-1 font-mono text-xs font-extrabold text-gfg-deep">
+                        {searchResult.rank.startsWith("#") ? searchResult.rank : `Rank ${searchResult.rank}`}
+                      </span>
+                      {searchResult.isSubTeamMember && (
+                        <Link
+                          to="/subteam"
+                          className="rounded-xl border border-ink bg-ink px-3 py-1 text-xs font-bold text-white hover:bg-gfg transition-colors"
+                        >
+                          View in Sub-Team List →
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
                 <p className="text-xs font-semibold text-ink/50 italic px-2">
-                  No match found in current selection roster. Check spelling or select team tab below.
+                  No match found in current selection roster. Check spelling or browse the rosters below.
                 </p>
               )}
             </div>
@@ -179,6 +229,16 @@ export default function ResultsView() {
             }`}
           >
             🌟 All Teams Roster
+          </button>
+          <button
+            onClick={() => setSelectedTeamTab("subteam")}
+            className={`rounded-2xl border-[2.5px] px-5 py-2.5 text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+              selectedTeamTab === "subteam"
+                ? "border-ink bg-gfg text-white shadow-pop-ink"
+                : "border-ink/30 bg-white text-ink hover:border-ink shadow-pop-sm"
+            }`}
+          >
+            ⚡ Sub Teams (10 Leads)
           </button>
           {RECRUITMENT_TEAMS.map((team) => {
             const isSelected = selectedTeamTab === team.id;
@@ -198,8 +258,106 @@ export default function ResultsView() {
           })}
         </div>
 
-        {/* Team Roster Grids */}
+        {/* Team Rosters Container */}
         <div className="mt-8 space-y-12">
+          {/* 1. SUB TEAM SECTION (SHOWN FIRST) */}
+          {showSubTeamSection && (
+            <section className="rounded-3xl border-[3px] border-gfg-deep bg-white p-6 sm:p-8 shadow-pop">
+              {/* Section Header */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-gfg/30 pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">⚡</span>
+                    <h2 className="text-2xl font-extrabold text-ink sm:text-3xl">
+                      Sub Team Domain Leads
+                    </h2>
+                  </div>
+                  <p className="mt-1 text-xs sm:text-sm font-semibold text-ink/65">
+                    Domain heads leading specialized technical tracks, competitive programming, and initiatives
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full border-2 border-ink bg-gfg px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-pop-sm">
+                    {SUB_TEAM_LEADS.length} Leads Appointed
+                  </span>
+                </div>
+              </div>
+
+              {/* Sub-Team Leads Grid */}
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {SUB_TEAM_LEADS.map((lead, idx) => {
+                  const isPending = lead.status && lead.status.toLowerCase().includes("pending");
+                  return (
+                    <div
+                      key={lead.name + idx}
+                      className="group flex flex-col justify-between overflow-hidden rounded-2xl border-[2.5px] border-ink bg-white p-4 shadow-pop-sm transition-all hover:-translate-y-0.5 hover:shadow-pop-ink"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1 min-w-0">
+                          {/* Domain Badge */}
+                          <div className="inline-block rounded-lg border border-gfg/50 bg-gfg-tint px-2.5 py-0.5 text-xs font-extrabold text-gfg-deep uppercase tracking-wide">
+                            {lead.domain}
+                          </div>
+                          {/* Name */}
+                          <h3 className="truncate text-base sm:text-lg font-extrabold text-ink group-hover:text-gfg-deep transition-colors">
+                            {lead.name}
+                          </h3>
+                        </div>
+
+                        {/* Role Pill */}
+                        <div className="shrink-0 text-right">
+                          <span className="inline-block rounded-lg border-2 border-ink bg-ink px-2.5 py-0.5 font-mono text-xs font-extrabold text-white">
+                            {lead.role || "Lead"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Bottom Meta */}
+                      <div className="mt-3 flex items-center justify-between border-t border-ink/10 pt-2.5 text-xs font-bold text-ink/60">
+                        <span>
+                          {lead.year || "Second Year"}{lead.branch ? ` · ${lead.branch}` : ""}
+                        </span>
+                        {isPending ? (
+                          <span className="font-mono text-[11px] font-extrabold text-amber-600 uppercase">
+                            Pending confirmation
+                          </span>
+                        ) : (
+                          <span className="font-mono text-[11px] font-extrabold text-gfg-deep uppercase">
+                            Confirmed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Banner Linking to Sub Team Members Route */}
+              <div className="mt-8 rounded-2xl border-[2.5px] border-ink bg-paper p-5 sm:p-6 shadow-pop-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">👥</span>
+                    <h4 className="text-base sm:text-lg font-extrabold text-ink">
+                      Sub Team Members List ({SUB_TEAM_MEMBERS.length} Selected)
+                    </h4>
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-ink/70 max-w-xl">
+                    View the complete roster of sub-team members across First Year, Second Year, and Third Year.
+                  </p>
+                </div>
+
+                <Link
+                  to="/subteam"
+                  className="inline-flex items-center gap-2 rounded-2xl border-2 border-ink bg-gfg px-5 py-3 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white shadow-pop-ink transition-transform hover:bg-gfg-deep active:translate-x-0.5 active:translate-y-0.5 cursor-pointer shrink-0"
+                >
+                  View Sub-Team Members →
+                </Link>
+              </div>
+            </section>
+          )}
+
+          {/* 2. CORE TEAMS (TECH, MANAGEMENT, SOCIAL MEDIA) */}
           {displayedTeams.map((team) => (
             <section
               key={team.id}
@@ -224,86 +382,67 @@ export default function ResultsView() {
                 </span>
               </div>
 
-              {/* Pending / Placeholder for Social Media */}
-              {team.isPending ? (
-                <div className="my-8 rounded-2xl border-2 border-dashed border-sun bg-amber-50 p-8 text-center">
-                  <span className="text-4xl">🎨</span>
-                  <h3 className="mt-3 text-lg font-extrabold text-ink">
-                    Social Media & Design Roster
-                  </h3>
-                  <p className="mx-auto mt-2 max-w-md text-sm font-medium text-ink/75">
-                    The evaluation for Social Media, Graphics & Content is currently in final review by the panel.
-                    The official verdict for this team will be announced shortly!
-                  </p>
-                  <span className="mt-4 inline-block rounded-xl border border-sun bg-white px-4 py-1.5 text-xs font-bold text-amber-800">
-                    Stay tuned to the official WhatsApp community
-                  </span>
-                </div>
-              ) : (
-                /* Group Columns (Matches the exact layout of the PDF and uploaded screenshot) */
-                <div className="mt-8 grid gap-8 md:grid-cols-2">
-                  {team.groups.map((group, gIdx) => (
-                    <div key={gIdx} className="space-y-4">
-                      {/* Top Intake Stats Card */}
-                      <div className="rounded-2xl border-[2.5px] border-ink bg-white p-5 shadow-pop-ink">
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-3xl font-extrabold tabular-nums text-ink">
-                            {group.capacity.split(" ")[0]} / {group.capacity.split(" ")[2]}
-                          </span>
-                          <span className="text-xs font-bold text-ink/60">
-                            {group.members.length} names listed
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs font-extrabold uppercase tracking-wider text-gfg-deep">
-                          {group.year.toUpperCase()}
-                        </p>
+              {/* Group Columns (Matches the exact layout of the PDF and uploaded screenshot) */}
+              <div className="mt-8 grid gap-8 md:grid-cols-2">
+                {team.groups.map((group, gIdx) => (
+                  <div key={gIdx} className="space-y-4">
+                    {/* Top Intake Stats Card */}
+                    <div className="rounded-2xl border-[2.5px] border-ink bg-white p-5 shadow-pop-ink">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-3xl font-extrabold tabular-nums text-ink">
+                          {group.capacity.split(" ")[0]} / {group.capacity.split(" ")[2]}
+                        </span>
+                        <span className="text-xs font-bold text-ink/60">
+                          {group.members.length} names listed
+                        </span>
                       </div>
+                      <p className="mt-1 text-xs font-extrabold uppercase tracking-wider text-gfg-deep">
+                        {group.year.toUpperCase()}
+                      </p>
+                    </div>
 
-                      {/* Header strip */}
-                      <div className="flex items-center justify-between rounded-xl border-2 border-ink bg-[#1a1e1b] px-4 py-2 text-xs font-extrabold tracking-wider text-white uppercase">
-                        <span>{group.shortYear} INTAKE</span>
-                        <span>{String(group.members.length).padStart(2, "0")}</span>
-                      </div>
+                    {/* Header strip */}
+                    <div className="flex items-center justify-between rounded-xl border-2 border-ink bg-[#1a1e1b] px-4 py-2 text-xs font-extrabold tracking-wider text-white uppercase">
+                      <span>{group.shortYear} INTAKE</span>
+                      <span>{String(group.members.length).padStart(2, "0")}</span>
+                    </div>
 
-                      {/* Candidate Cards */}
-                      <div className="space-y-2.5">
-                        {group.members.map((member) => (
-                          <div
-                            key={member.rank}
-                            className="group flex items-stretch overflow-hidden rounded-2xl border-[2.5px] border-ink bg-white shadow-pop-sm transition-all hover:-translate-y-0.5 hover:shadow-pop-ink"
-                          >
-                            {/* Number Tag */}
-                            <div className="grid w-14 shrink-0 place-items-center border-r-[2.5px] border-ink bg-gfg font-mono text-sm font-extrabold text-white">
-                              {member.rank}
-                            </div>
+                    {/* Candidate Cards */}
+                    <div className="space-y-2.5">
+                      {group.members.map((member) => (
+                        <div
+                          key={member.rank}
+                          className="group flex items-stretch overflow-hidden rounded-2xl border-[2.5px] border-ink bg-white shadow-pop-sm transition-all hover:-translate-y-0.5 hover:shadow-pop-ink"
+                        >
+                          {/* Number Tag */}
+                          <div className="grid w-14 shrink-0 place-items-center border-r-[2.5px] border-ink bg-gfg font-mono text-sm font-extrabold text-white">
+                            {member.rank}
+                          </div>
 
-                            {/* Candidate Info */}
-                            <div className="flex flex-1 items-center justify-between px-4 py-3">
-                              <div>
-                                <p className="text-base font-extrabold text-ink group-hover:text-gfg-deep transition-colors">
-                                  {member.name}
-                                </p>
-                                <span className="text-xs font-bold uppercase text-ink/50">
-                                  {member.year}
-                                </span>
-                              </div>
-
-                              <span className="rounded-lg border border-gfg/40 bg-gfg-tint px-2.5 py-0.5 font-mono text-[11px] font-extrabold text-gfg-deep uppercase">
-                                {member.role || "SELECTED"}
+                          {/* Candidate Info */}
+                          <div className="flex flex-1 items-center justify-between px-4 py-3">
+                            <div>
+                              <p className="text-base font-extrabold text-ink group-hover:text-gfg-deep transition-colors">
+                                {member.name}
+                              </p>
+                              <span className="text-xs font-bold uppercase text-ink/50">
+                                {member.year}
                               </span>
                             </div>
+
+                            <span className="rounded-lg border border-gfg/40 bg-gfg-tint px-2.5 py-0.5 font-mono text-[11px] font-extrabold text-gfg-deep uppercase">
+                              {member.role || "SELECTED"}
+                            </span>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </section>
           ))}
         </div>
-
-      
 
         {/* Footer */}
         <footer className="mt-8 flex flex-wrap items-center justify-between border-t border-gfg/30 pt-4 text-xs font-bold text-ink/60">
