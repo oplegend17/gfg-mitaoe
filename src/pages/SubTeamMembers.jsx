@@ -160,11 +160,6 @@ export default function SubTeamMembers() {
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {member.isCustom && (
-                    <span className="rounded-md border border-sun bg-amber-50 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-amber-800">
-                      NEW
-                    </span>
-                  )}
                   <span
                     className={`rounded-lg border px-2.5 py-1 font-mono text-xs font-extrabold uppercase ${
                       badge === "FY"

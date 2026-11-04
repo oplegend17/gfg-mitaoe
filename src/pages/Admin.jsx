@@ -110,11 +110,14 @@ function Dashboard({ user, onLogout }) {
   const {
     leads,
     members,
-    customLeads,
-    customMembers,
+    migrating,
+    isFirebaseSynced,
+    migrateAllToFirebase,
     addLead,
+    updateLead,
     removeLead,
     addMember,
+    updateMember,
     removeMember,
   } = useSubTeamData();
 
@@ -124,7 +127,7 @@ function Dashboard({ user, onLogout }) {
   const [yearFilter, setYearFilter] = useState("ALL");
   const [activeFeedbackModal, setActiveFeedbackModal] = useState(null);
 
-  // Sub Team Management UI state
+  // Sub Team Tabs & Forms
   const [subTeamTab, setSubTeamTab] = useState("leads"); // 'leads' | 'members'
   const [leadForm, setLeadForm] = useState({
     name: "",
@@ -140,6 +143,10 @@ function Dashboard({ user, onLogout }) {
   });
   const [subTeamSuccess, setSubTeamSuccess] = useState("");
   const [subTeamError, setSubTeamError] = useState("");
+
+  // Edit Modals
+  const [editingLead, setEditingLead] = useState(null);
+  const [editingMember, setEditingMember] = useState(null);
 
   const joinUrl = PUBLIC_URL || (typeof window !== "undefined" ? window.location.origin : "");
 
@@ -172,7 +179,7 @@ function Dashboard({ user, onLogout }) {
     run(resetCount);
   };
 
-  // Submit new Sub Team Lead
+  // Add Lead
   const handleAddLead = async (e) => {
     e.preventDefault();
     setSubTeamError("");
@@ -183,7 +190,7 @@ function Dashboard({ user, onLogout }) {
     }
     try {
       await addLead(leadForm);
-      setSubTeamSuccess(`Added Lead "${leadForm.name}" (${leadForm.domain}) successfully!`);
+      setSubTeamSuccess(`Saved Lead "${leadForm.name}" successfully!`);
       setLeadForm({
         name: "",
         domain: "",
@@ -198,7 +205,28 @@ function Dashboard({ user, onLogout }) {
     }
   };
 
-  // Submit new Sub Team Member
+  // Save edited Lead
+  const handleSaveEditedLead = async (e) => {
+    e.preventDefault();
+    if (!editingLead) return;
+    try {
+      await updateLead(editingLead.id, {
+        name: editingLead.name,
+        domain: editingLead.domain,
+        role: editingLead.role,
+        year: editingLead.year,
+        branch: editingLead.branch,
+        status: editingLead.status,
+      });
+      setSubTeamSuccess(`Updated "${editingLead.name}" successfully!`);
+      setEditingLead(null);
+      setTimeout(() => setSubTeamSuccess(""), 4000);
+    } catch (err) {
+      setSubTeamError(err.message || "Failed to update lead");
+    }
+  };
+
+  // Add Member
   const handleAddMember = async (e) => {
     e.preventDefault();
     setSubTeamError("");
@@ -209,7 +237,7 @@ function Dashboard({ user, onLogout }) {
     }
     try {
       await addMember(memberForm);
-      setSubTeamSuccess(`Added Member "${memberForm.name}" successfully!`);
+      setSubTeamSuccess(`Saved Member "${memberForm.name}" successfully!`);
       setMemberForm({
         name: "",
         year: "Second Year",
@@ -217,6 +245,23 @@ function Dashboard({ user, onLogout }) {
       setTimeout(() => setSubTeamSuccess(""), 4000);
     } catch (err) {
       setSubTeamError(err.message || "Failed to add member");
+    }
+  };
+
+  // Save edited Member
+  const handleSaveEditedMember = async (e) => {
+    e.preventDefault();
+    if (!editingMember) return;
+    try {
+      await updateMember(editingMember.id, {
+        name: editingMember.name,
+        year: editingMember.year,
+      });
+      setSubTeamSuccess(`Updated "${editingMember.name}" successfully!`);
+      setEditingMember(null);
+      setTimeout(() => setSubTeamSuccess(""), 4000);
+    } catch (err) {
+      setSubTeamError(err.message || "Failed to update member");
     }
   };
 
@@ -422,7 +467,7 @@ function Dashboard({ user, onLogout }) {
         </section>
 
         {/* ============================================================ */}
-        {/* SUB TEAM MANAGEMENT SECTION (ADD LEADS & MEMBERS) */}
+        {/* SUB TEAM MANAGEMENT SECTION (ADD & EDIT LEADS & MEMBERS) */}
         {/* ============================================================ */}
         <section className="mt-10 rounded-3xl border-[3px] border-gfg-deep bg-white p-6 sm:p-8 shadow-pop">
           {/* Header */}
@@ -438,12 +483,22 @@ function Dashboard({ user, onLogout }) {
                 </span>
               </div>
               <p className="mt-1 text-sm font-semibold text-ink/65">
-                Add and manage confirmed entries for Sub Team Leads (shown on /results) and Sub Team Members (shown on /subteam).
+                Add, edit, and manage all Sub Team Leads (on /results) and Sub Team Members (on /subteam).
               </p>
             </div>
 
-            {/* Quick Links */}
-            <div className="flex items-center gap-2.5">
+            {/* Quick Actions */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {!isFirebaseSynced && (
+                <button
+                  disabled={migrating}
+                  onClick={migrateAllToFirebase}
+                  className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-ink bg-sun px-4 py-2 text-xs font-extrabold uppercase text-ink shadow-pop-sm hover:bg-amber-300 cursor-pointer disabled:opacity-50"
+                  title="Upload all base records to Firestore database so every record is editable"
+                >
+                  {migrating ? "Saving to Cloud..." : "☁ Save All to Firebase"}
+                </button>
+              )}
               <Link
                 to="/results"
                 target="_blank"
@@ -493,7 +548,7 @@ function Dashboard({ user, onLogout }) {
             </button>
           </div>
 
-          {/* Notification Messages */}
+          {/* Notifications */}
           {subTeamSuccess && (
             <div className="mt-4 rounded-2xl border-2 border-gfg bg-gfg-tint p-3 text-sm font-extrabold text-gfg-deep animate-pop">
               ✓ {subTeamSuccess}
@@ -505,10 +560,10 @@ function Dashboard({ user, onLogout }) {
             </div>
           )}
 
-          {/* 1. ADD SUB TEAM LEAD FORM & LIST */}
+          {/* 1. SUB TEAM LEADS (FORM & EDITABLE LIST) */}
           {subTeamTab === "leads" && (
             <div className="mt-6 space-y-6">
-              {/* Form Card */}
+              {/* Add Lead Form */}
               <div className="rounded-2xl border-2 border-ink/20 bg-paper p-5 sm:p-6 shadow-pop-sm">
                 <div className="flex items-center gap-2 border-b border-ink/10 pb-3">
                   <span className="text-xl">➕</span>
@@ -607,13 +662,13 @@ function Dashboard({ user, onLogout }) {
                       type="submit"
                       className="rounded-2xl border-[3px] border-ink bg-gfg px-6 py-2.5 text-sm font-extrabold text-white shadow-pop-ink transition-transform active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                     >
-                      + Add Sub Team Lead
+                      + Save Sub Team Lead
                     </button>
                   </div>
                 </form>
               </div>
 
-              {/* Current Leads Table */}
+              {/* Editable Leads Table */}
               <div className="overflow-hidden rounded-2xl border-2 border-ink/20">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -624,7 +679,7 @@ function Dashboard({ user, onLogout }) {
                         <th className="px-4 py-3">Lead Name</th>
                         <th className="px-4 py-3">Year & Branch</th>
                         <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3 text-right">Action</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gfg/20 bg-white text-sm">
@@ -639,14 +694,7 @@ function Dashboard({ user, onLogout }) {
                             </span>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <span className="font-extrabold text-ink">{lead.name}</span>
-                              {lead.isCustom && (
-                                <span className="rounded-md border border-sun bg-amber-50 px-1.5 py-0.2 font-mono text-[10px] font-extrabold text-amber-800">
-                                  Custom
-                                </span>
-                              )}
-                            </div>
+                            <span className="font-extrabold text-ink">{lead.name}</span>
                           </td>
                           <td className="px-4 py-3 text-xs font-semibold text-ink/75">
                             {lead.year}{lead.branch ? ` · ${lead.branch}` : ""}
@@ -663,22 +711,33 @@ function Dashboard({ user, onLogout }) {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right">
-                            {lead.isCustom ? (
-                              <button
-                                onClick={() => {
-                                  if (confirm(`Remove lead "${lead.name}"?`)) {
-                                    removeLead(lead.id);
-                                  }
-                                }}
-                                className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
-                              >
-                                Delete
-                              </button>
-                            ) : (
-                              <span className="font-mono text-[11px] font-bold text-ink/35">
-                                Base
-                              </span>
-                            )}
+                            <div className="flex items-center justify-end gap-2">
+                              {lead.isFirebase !== false && (
+                                <button
+                                  onClick={() => setEditingLead(lead)}
+                                  className="rounded-xl border border-ink/30 bg-paper px-2.5 py-1 text-xs font-bold text-ink hover:border-ink hover:bg-white transition-colors cursor-pointer"
+                                >
+                                  Edit
+                                </button>
+                              )}
+                              {lead.isFirebase !== false && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`Remove lead "${lead.name}"?`)) {
+                                      removeLead(lead.id);
+                                    }
+                                  }}
+                                  className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                              {lead.isFirebase === false && (
+                                <span className="font-mono text-[11px] font-bold text-ink/40">
+                                  Base
+                                </span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -689,10 +748,10 @@ function Dashboard({ user, onLogout }) {
             </div>
           )}
 
-          {/* 2. ADD SUB TEAM MEMBER FORM & LIST */}
+          {/* 2. SUB TEAM MEMBERS (FORM & EDITABLE LIST) */}
           {subTeamTab === "members" && (
             <div className="mt-6 space-y-6">
-              {/* Form Card */}
+              {/* Add Member Form */}
               <div className="rounded-2xl border-2 border-ink/20 bg-paper p-5 sm:p-6 shadow-pop-sm">
                 <div className="flex items-center gap-2 border-b border-ink/10 pb-3">
                   <span className="text-xl">➕</span>
@@ -709,7 +768,7 @@ function Dashboard({ user, onLogout }) {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Rohit Sharma"
+                      placeholder="e.g. Shiv Sasane"
                       value={memberForm.name}
                       onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })}
                       className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink focus:border-gfg focus:outline-none"
@@ -737,13 +796,13 @@ function Dashboard({ user, onLogout }) {
                       type="submit"
                       className="rounded-2xl border-[3px] border-ink bg-gfg px-6 py-2.5 text-sm font-extrabold text-white shadow-pop-ink transition-transform active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                     >
-                      + Add Sub Team Member
+                      + Save Sub Team Member
                     </button>
                   </div>
                 </form>
               </div>
 
-              {/* Current Members Summary Table */}
+              {/* Editable Members Table */}
               <div className="overflow-hidden rounded-2xl border-2 border-ink/20">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -752,7 +811,7 @@ function Dashboard({ user, onLogout }) {
                         <th className="px-4 py-3">#</th>
                         <th className="px-4 py-3">Member Name</th>
                         <th className="px-4 py-3">Year</th>
-                        <th className="px-4 py-3 text-right">Action</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gfg/20 bg-white text-sm">
@@ -762,14 +821,7 @@ function Dashboard({ user, onLogout }) {
                             {idx + 1}
                           </td>
                           <td className="px-4 py-2.5">
-                            <div className="flex items-center gap-2">
-                              <span className="font-extrabold text-ink">{member.name}</span>
-                              {member.isCustom && (
-                                <span className="rounded-md border border-sun bg-amber-50 px-1.5 py-0.2 font-mono text-[10px] font-extrabold text-amber-800">
-                                  Custom
-                                </span>
-                              )}
-                            </div>
+                            <span className="font-extrabold text-ink">{member.name}</span>
                           </td>
                           <td className="px-4 py-2.5">
                             <span className="inline-block rounded-lg border border-ink/20 bg-paper px-2 py-0.5 text-xs font-extrabold text-ink">
@@ -777,22 +829,33 @@ function Dashboard({ user, onLogout }) {
                             </span>
                           </td>
                           <td className="px-4 py-2.5 text-right">
-                            {member.isCustom ? (
-                              <button
-                                onClick={() => {
-                                  if (confirm(`Remove member "${member.name}"?`)) {
-                                    removeMember(member.id);
-                                  }
-                                }}
-                                className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
-                              >
-                                Delete
-                              </button>
-                            ) : (
-                              <span className="font-mono text-[11px] font-bold text-ink/35">
-                                Base
-                              </span>
-                            )}
+                            <div className="flex items-center justify-end gap-2">
+                              {member.isFirebase !== false && (
+                                <button
+                                  onClick={() => setEditingMember(member)}
+                                  className="rounded-xl border border-ink/30 bg-paper px-2.5 py-1 text-xs font-bold text-ink hover:border-ink hover:bg-white transition-colors cursor-pointer"
+                                >
+                                  Edit
+                                </button>
+                              )}
+                              {member.isFirebase !== false && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`Remove member "${member.name}"?`)) {
+                                      removeMember(member.id);
+                                    }
+                                  }}
+                                  className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                              {member.isFirebase === false && (
+                                <span className="font-mono text-[11px] font-bold text-ink/40">
+                                  Base
+                                </span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -803,6 +866,179 @@ function Dashboard({ user, onLogout }) {
             </div>
           )}
         </section>
+
+        {/* Modal: Edit Sub Team Lead */}
+        {editingLead && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm">
+            <div className="relative w-full max-w-lg rounded-3xl border-[3px] border-ink bg-white p-6 shadow-pop-ink animate-pop">
+              <div className="flex items-center justify-between border-b border-gfg/30 pb-3">
+                <h3 className="text-lg font-extrabold text-ink">
+                  Edit Sub Team Lead
+                </h3>
+                <button
+                  onClick={() => setEditingLead(null)}
+                  className="rounded-full border-2 border-ink p-1 text-ink hover:bg-paper"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEditedLead} className="mt-4 space-y-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-ink/70">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingLead.name}
+                    onChange={(e) => setEditingLead({ ...editingLead, name: e.target.value })}
+                    className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-paper px-3 py-2 text-sm font-semibold text-ink focus:border-gfg focus:bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-ink/70">Domain</label>
+                    <input
+                      type="text"
+                      required
+                      value={editingLead.domain}
+                      onChange={(e) => setEditingLead({ ...editingLead, domain: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-paper px-3 py-2 text-sm font-semibold text-ink focus:border-gfg focus:bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-ink/70">Role</label>
+                    <input
+                      type="text"
+                      value={editingLead.role}
+                      onChange={(e) => setEditingLead({ ...editingLead, role: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-paper px-3 py-2 text-sm font-semibold text-ink focus:border-gfg focus:bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-ink/70">Year</label>
+                    <select
+                      value={editingLead.year}
+                      onChange={(e) => setEditingLead({ ...editingLead, year: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-paper px-3 py-2 text-sm font-semibold text-ink focus:border-gfg focus:bg-white"
+                    >
+                      <option value="First Year">First Year (FY)</option>
+                      <option value="Second Year">Second Year (SY)</option>
+                      <option value="Third Year">Third Year (TY)</option>
+                      <option value="Final Year">Final Year (B.Tech)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-ink/70">Status</label>
+                    <select
+                      value={editingLead.status}
+                      onChange={(e) => setEditingLead({ ...editingLead, status: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-paper px-3 py-2 text-sm font-semibold text-ink focus:border-gfg focus:bg-white"
+                    >
+                      <option value="confirmed">Confirmed</option>
+                      <option value="Pending confirmation">Pending Confirmation</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-ink/70">Branch</label>
+                  <input
+                    type="text"
+                    value={editingLead.branch || ""}
+                    onChange={(e) => setEditingLead({ ...editingLead, branch: e.target.value })}
+                    className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-paper px-3 py-2 text-sm font-semibold text-ink focus:border-gfg focus:bg-white"
+                  />
+                </div>
+
+                <div className="mt-5 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingLead(null)}
+                    className="flex-1 rounded-2xl border-2 border-ink/30 bg-white py-2.5 text-sm font-bold text-ink"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 rounded-2xl border-[3px] border-ink bg-gfg py-2.5 text-sm font-bold text-white shadow-pop-ink"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Edit Sub Team Member */}
+        {editingMember && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm">
+            <div className="relative w-full max-w-md rounded-3xl border-[3px] border-ink bg-white p-6 shadow-pop-ink animate-pop">
+              <div className="flex items-center justify-between border-b border-gfg/30 pb-3">
+                <h3 className="text-lg font-extrabold text-ink">
+                  Edit Sub Team Member
+                </h3>
+                <button
+                  onClick={() => setEditingMember(null)}
+                  className="rounded-full border-2 border-ink p-1 text-ink hover:bg-paper"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEditedMember} className="mt-4 space-y-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-ink/70">Member Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingMember.name}
+                    onChange={(e) => setEditingMember({ ...editingMember, name: e.target.value })}
+                    className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-paper px-3 py-2 text-sm font-semibold text-ink focus:border-gfg focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-ink/70">Year</label>
+                  <select
+                    value={editingMember.year}
+                    onChange={(e) => setEditingMember({ ...editingMember, year: e.target.value })}
+                    className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-paper px-3 py-2 text-sm font-semibold text-ink focus:border-gfg focus:bg-white"
+                  >
+                    <option value="First Year">First Year (FY)</option>
+                    <option value="Second Year">Second Year (SY)</option>
+                    <option value="Third Year">Third Year (TY)</option>
+                    <option value="Final Year">Final Year (B.Tech)</option>
+                  </select>
+                </div>
+
+                <div className="mt-5 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingMember(null)}
+                    className="flex-1 rounded-2xl border-2 border-ink/30 bg-white py-2.5 text-sm font-bold text-ink"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 rounded-2xl border-[3px] border-ink bg-gfg py-2.5 text-sm font-bold text-white shadow-pop-ink"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Attendee Roster Section */}
         <section className="mt-12 w-full rounded-3xl border-[3px] border-gfg-deep bg-white p-5 sm:p-8 shadow-pop">

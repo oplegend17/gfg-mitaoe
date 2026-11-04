@@ -307,12 +307,7 @@ export default function ResultsView() {
                         </div>
 
                         {/* Role Pill */}
-                        <div className="shrink-0 text-right flex items-center gap-1.5">
-                          {lead.isCustom && (
-                            <span className="rounded-md border border-sun bg-amber-50 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-amber-800">
-                              NEW
-                            </span>
-                          )}
+                        <div className="shrink-0 text-right">
                           <span className="inline-block rounded-lg border-2 border-ink bg-ink px-2.5 py-0.5 font-mono text-xs font-extrabold text-white">
                             {lead.role || "Lead"}
                           </span>
