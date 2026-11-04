@@ -77,7 +77,7 @@ export const SUB_TEAM_LEADS = [
     "name": "Shardul Deshmukh",
     "year": "First Year",
     "branch": "CSE(DS)",
-    "status": "Pending confirmation"
+    "status": "confirmed"
   }
 ];
 
