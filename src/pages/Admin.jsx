@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "../hooks/useAuth.js";
 import { useAttendanceAdmin } from "../hooks/useAttendanceAdmin.js";
+import { useSubTeamData } from "../hooks/useSubTeamData.js";
 import { EVENT, PUBLIC_URL } from "../config/firebase.js";
 import Brand from "../components/Brand.jsx";
 import { CornerTriangles, DotGrid, Sparkle } from "../components/Decor.jsx";
@@ -105,11 +106,40 @@ function Dashboard({ user, onLogout }) {
     setResultsPublished,
     resetCount,
   } = useAttendanceAdmin(true);
+
+  const {
+    leads,
+    members,
+    customLeads,
+    customMembers,
+    addLead,
+    removeLead,
+    addMember,
+    removeMember,
+  } = useSubTeamData();
+
   const [busy, setBusy] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [branchFilter, setBranchFilter] = useState("ALL");
   const [yearFilter, setYearFilter] = useState("ALL");
   const [activeFeedbackModal, setActiveFeedbackModal] = useState(null);
+
+  // Sub Team Management UI state
+  const [subTeamTab, setSubTeamTab] = useState("leads"); // 'leads' | 'members'
+  const [leadForm, setLeadForm] = useState({
+    name: "",
+    domain: "",
+    role: "Lead",
+    year: "Second Year",
+    branch: "",
+    status: "confirmed",
+  });
+  const [memberForm, setMemberForm] = useState({
+    name: "",
+    year: "Second Year",
+  });
+  const [subTeamSuccess, setSubTeamSuccess] = useState("");
+  const [subTeamError, setSubTeamError] = useState("");
 
   const joinUrl = PUBLIC_URL || (typeof window !== "undefined" ? window.location.origin : "");
 
@@ -140,6 +170,54 @@ function Dashboard({ user, onLogout }) {
     }
     setConfirmReset(false);
     run(resetCount);
+  };
+
+  // Submit new Sub Team Lead
+  const handleAddLead = async (e) => {
+    e.preventDefault();
+    setSubTeamError("");
+    setSubTeamSuccess("");
+    if (!leadForm.name.trim() || !leadForm.domain.trim()) {
+      setSubTeamError("Lead Name and Sub Team Domain are required.");
+      return;
+    }
+    try {
+      await addLead(leadForm);
+      setSubTeamSuccess(`Added Lead "${leadForm.name}" (${leadForm.domain}) successfully!`);
+      setLeadForm({
+        name: "",
+        domain: "",
+        role: "Lead",
+        year: "Second Year",
+        branch: "",
+        status: "confirmed",
+      });
+      setTimeout(() => setSubTeamSuccess(""), 4000);
+    } catch (err) {
+      setSubTeamError(err.message || "Failed to add lead");
+    }
+  };
+
+  // Submit new Sub Team Member
+  const handleAddMember = async (e) => {
+    e.preventDefault();
+    setSubTeamError("");
+    setSubTeamSuccess("");
+    if (!memberForm.name.trim()) {
+      setSubTeamError("Member Name is required.");
+      return;
+    }
+    try {
+      await addMember(memberForm);
+      setSubTeamSuccess(`Added Member "${memberForm.name}" successfully!`);
+      setMemberForm({
+        name: "",
+        year: "Second Year",
+      });
+      setTimeout(() => setSubTeamSuccess(""), 4000);
+    } catch (err) {
+      setSubTeamError(err.message || "Failed to add member");
+    }
   };
 
   // Unique list of branches for filter dropdown
@@ -341,6 +419,389 @@ function Dashboard({ user, onLogout }) {
               </button>
             </div>
           </div>
+        </section>
+
+        {/* ============================================================ */}
+        {/* SUB TEAM MANAGEMENT SECTION (ADD LEADS & MEMBERS) */}
+        {/* ============================================================ */}
+        <section className="mt-10 rounded-3xl border-[3px] border-gfg-deep bg-white p-6 sm:p-8 shadow-pop">
+          {/* Header */}
+          <div className="flex flex-col gap-4 border-b-2 border-gfg/30 pb-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">⚡</span>
+                <h2 className="text-2xl font-extrabold text-ink sm:text-3xl">
+                  Sub Team Records Manager
+                </h2>
+                <span className="rounded-full border-2 border-gfg bg-gfg-tint px-3 py-0.5 text-xs font-extrabold text-gfg-deep">
+                  {leads.length} Leads · {members.length} Members
+                </span>
+              </div>
+              <p className="mt-1 text-sm font-semibold text-ink/65">
+                Add and manage confirmed entries for Sub Team Leads (shown on /results) and Sub Team Members (shown on /subteam).
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div className="flex items-center gap-2.5">
+              <Link
+                to="/results"
+                target="_blank"
+                className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-ink bg-paper px-4 py-2 text-xs font-extrabold uppercase text-ink shadow-pop-sm hover:bg-white"
+              >
+                Preview Leads ↗
+              </Link>
+              <Link
+                to="/subteam"
+                target="_blank"
+                className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-ink bg-gfg px-4 py-2 text-xs font-extrabold uppercase text-white shadow-pop-sm hover:bg-gfg-deep"
+              >
+                Preview Members ↗
+              </Link>
+            </div>
+          </div>
+
+          {/* Subteam Tabs: Leads vs Members */}
+          <div className="mt-6 flex flex-wrap gap-2.5">
+            <button
+              onClick={() => {
+                setSubTeamTab("leads");
+                setSubTeamError("");
+                setSubTeamSuccess("");
+              }}
+              className={`rounded-2xl border-[2.5px] px-5 py-2.5 text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                subTeamTab === "leads"
+                  ? "border-ink bg-ink text-white shadow-pop-ink"
+                  : "border-ink/30 bg-paper text-ink hover:border-ink shadow-pop-sm"
+              }`}
+            >
+              👑 Sub Team Leads ({leads.length})
+            </button>
+            <button
+              onClick={() => {
+                setSubTeamTab("members");
+                setSubTeamError("");
+                setSubTeamSuccess("");
+              }}
+              className={`rounded-2xl border-[2.5px] px-5 py-2.5 text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                subTeamTab === "members"
+                  ? "border-ink bg-gfg text-white shadow-pop-ink"
+                  : "border-ink/30 bg-paper text-ink hover:border-ink shadow-pop-sm"
+              }`}
+            >
+              👥 Sub Team Members ({members.length})
+            </button>
+          </div>
+
+          {/* Notification Messages */}
+          {subTeamSuccess && (
+            <div className="mt-4 rounded-2xl border-2 border-gfg bg-gfg-tint p-3 text-sm font-extrabold text-gfg-deep animate-pop">
+              ✓ {subTeamSuccess}
+            </div>
+          )}
+          {subTeamError && (
+            <div className="mt-4 rounded-2xl border-2 border-alert bg-red-50 p-3 text-sm font-extrabold text-alert">
+              ✕ {subTeamError}
+            </div>
+          )}
+
+          {/* 1. ADD SUB TEAM LEAD FORM & LIST */}
+          {subTeamTab === "leads" && (
+            <div className="mt-6 space-y-6">
+              {/* Form Card */}
+              <div className="rounded-2xl border-2 border-ink/20 bg-paper p-5 sm:p-6 shadow-pop-sm">
+                <div className="flex items-center gap-2 border-b border-ink/10 pb-3">
+                  <span className="text-xl">➕</span>
+                  <h3 className="text-lg font-extrabold text-ink">
+                    Add New Sub Team Lead
+                  </h3>
+                </div>
+
+                <form onSubmit={handleAddLead} className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wide text-ink/70">
+                      Lead Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Atharva Baodhankar"
+                      value={leadForm.name}
+                      onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink focus:border-gfg focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wide text-ink/70">
+                      Sub Team Domain *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Web & Product, AI / ML, Cloud..."
+                      value={leadForm.domain}
+                      onChange={(e) => setLeadForm({ ...leadForm, domain: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink focus:border-gfg focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wide text-ink/70">
+                      Role / Title
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Lead"
+                      value={leadForm.role}
+                      onChange={(e) => setLeadForm({ ...leadForm, role: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink focus:border-gfg focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wide text-ink/70">
+                      Year
+                    </label>
+                    <select
+                      value={leadForm.year}
+                      onChange={(e) => setLeadForm({ ...leadForm, year: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink focus:border-gfg focus:outline-none cursor-pointer"
+                    >
+                      <option value="First Year">First Year (FY)</option>
+                      <option value="Second Year">Second Year (SY)</option>
+                      <option value="Third Year">Third Year (TY)</option>
+                      <option value="Final Year">Final Year (B.Tech)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wide text-ink/70">
+                      Branch (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Software Engineering, AI&ML..."
+                      value={leadForm.branch}
+                      onChange={(e) => setLeadForm({ ...leadForm, branch: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink focus:border-gfg focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wide text-ink/70">
+                      Status
+                    </label>
+                    <select
+                      value={leadForm.status}
+                      onChange={(e) => setLeadForm({ ...leadForm, status: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink focus:border-gfg focus:outline-none cursor-pointer"
+                    >
+                      <option value="confirmed">Confirmed</option>
+                      <option value="Pending confirmation">Pending Confirmation</option>
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2 lg:col-span-3 flex justify-end">
+                    <button
+                      type="submit"
+                      className="rounded-2xl border-[3px] border-ink bg-gfg px-6 py-2.5 text-sm font-extrabold text-white shadow-pop-ink transition-transform active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                    >
+                      + Add Sub Team Lead
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Current Leads Table */}
+              <div className="overflow-hidden rounded-2xl border-2 border-ink/20">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b-2 border-ink/20 bg-gfg-tint text-xs font-extrabold uppercase tracking-wide text-ink">
+                        <th className="px-4 py-3">#</th>
+                        <th className="px-4 py-3">Domain</th>
+                        <th className="px-4 py-3">Lead Name</th>
+                        <th className="px-4 py-3">Year & Branch</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gfg/20 bg-white text-sm">
+                      {leads.map((lead, idx) => (
+                        <tr key={lead.id || idx} className="hover:bg-paper/60 transition-colors">
+                          <td className="px-4 py-3 font-mono text-xs font-bold text-ink/40">
+                            {idx + 1}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="inline-block rounded-lg border border-gfg/40 bg-gfg-tint px-2.5 py-0.5 text-xs font-extrabold text-gfg-deep uppercase">
+                              {lead.domain}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-extrabold text-ink">{lead.name}</span>
+                              {lead.isCustom && (
+                                <span className="rounded-md border border-sun bg-amber-50 px-1.5 py-0.2 font-mono text-[10px] font-extrabold text-amber-800">
+                                  Custom
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-xs font-semibold text-ink/75">
+                            {lead.year}{lead.branch ? ` · ${lead.branch}` : ""}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`rounded-lg border px-2 py-0.5 font-mono text-[11px] font-extrabold uppercase ${
+                                lead.status?.toLowerCase().includes("pending")
+                                  ? "border-amber-400 bg-amber-50 text-amber-800"
+                                  : "border-gfg/40 bg-gfg-tint text-gfg-deep"
+                              }`}
+                            >
+                              {lead.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {lead.isCustom ? (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Remove lead "${lead.name}"?`)) {
+                                    removeLead(lead.id);
+                                  }
+                                }}
+                                className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
+                              >
+                                Delete
+                              </button>
+                            ) : (
+                              <span className="font-mono text-[11px] font-bold text-ink/35">
+                                Base
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 2. ADD SUB TEAM MEMBER FORM & LIST */}
+          {subTeamTab === "members" && (
+            <div className="mt-6 space-y-6">
+              {/* Form Card */}
+              <div className="rounded-2xl border-2 border-ink/20 bg-paper p-5 sm:p-6 shadow-pop-sm">
+                <div className="flex items-center gap-2 border-b border-ink/10 pb-3">
+                  <span className="text-xl">➕</span>
+                  <h3 className="text-lg font-extrabold text-ink">
+                    Add New Sub Team Member
+                  </h3>
+                </div>
+
+                <form onSubmit={handleAddMember} className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-extrabold uppercase tracking-wide text-ink/70">
+                      Member Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Rohit Sharma"
+                      value={memberForm.name}
+                      onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink focus:border-gfg focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wide text-ink/70">
+                      Year *
+                    </label>
+                    <select
+                      value={memberForm.year}
+                      onChange={(e) => setMemberForm({ ...memberForm, year: e.target.value })}
+                      className="mt-1 w-full rounded-xl border-2 border-ink/30 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink focus:border-gfg focus:outline-none cursor-pointer"
+                    >
+                      <option value="First Year">First Year (FY)</option>
+                      <option value="Second Year">Second Year (SY)</option>
+                      <option value="Third Year">Third Year (TY)</option>
+                      <option value="Final Year">Final Year (B.Tech)</option>
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2 lg:col-span-3 flex justify-end">
+                    <button
+                      type="submit"
+                      className="rounded-2xl border-[3px] border-ink bg-gfg px-6 py-2.5 text-sm font-extrabold text-white shadow-pop-ink transition-transform active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                    >
+                      + Add Sub Team Member
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Current Members Summary Table */}
+              <div className="overflow-hidden rounded-2xl border-2 border-ink/20">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b-2 border-ink/20 bg-gfg-tint text-xs font-extrabold uppercase tracking-wide text-ink">
+                        <th className="px-4 py-3">#</th>
+                        <th className="px-4 py-3">Member Name</th>
+                        <th className="px-4 py-3">Year</th>
+                        <th className="px-4 py-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gfg/20 bg-white text-sm">
+                      {members.map((member, idx) => (
+                        <tr key={member.id || idx} className="hover:bg-paper/60 transition-colors">
+                          <td className="px-4 py-2.5 font-mono text-xs font-bold text-ink/40">
+                            {idx + 1}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-extrabold text-ink">{member.name}</span>
+                              {member.isCustom && (
+                                <span className="rounded-md border border-sun bg-amber-50 px-1.5 py-0.2 font-mono text-[10px] font-extrabold text-amber-800">
+                                  Custom
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <span className="inline-block rounded-lg border border-ink/20 bg-paper px-2 py-0.5 text-xs font-extrabold text-ink">
+                              {member.year}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5 text-right">
+                            {member.isCustom ? (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Remove member "${member.name}"?`)) {
+                                    removeMember(member.id);
+                                  }
+                                }}
+                                className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
+                              >
+                                Delete
+                              </button>
+                            ) : (
+                              <span className="font-mono text-[11px] font-bold text-ink/35">
+                                Base
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Attendee Roster Section */}

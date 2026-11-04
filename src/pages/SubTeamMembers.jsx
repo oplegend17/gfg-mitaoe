@@ -2,9 +2,10 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Brand from "../components/Brand.jsx";
 import { CornerTriangles, DotGrid } from "../components/Decor.jsx";
-import { SUB_TEAM_MEMBERS } from "../data/subTeamData.js";
+import { useSubTeamData } from "../hooks/useSubTeamData.js";
 
 export default function SubTeamMembers() {
+  const { members, loading } = useSubTeamData();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYearFilter, setSelectedYearFilter] = useState("all");
 
@@ -12,14 +13,15 @@ export default function SubTeamMembers() {
   const getYearBadge = (year) => {
     if (!year) return "Member";
     const lower = year.toLowerCase();
-    if (lower.includes("first")) return "FY";
-    if (lower.includes("second")) return "SY";
-    if (lower.includes("third")) return "TY";
+    if (lower.includes("first") || lower === "fy") return "FY";
+    if (lower.includes("second") || lower === "sy") return "SY";
+    if (lower.includes("third") || lower === "ty") return "TY";
+    if (lower.includes("final") || lower.includes("btech") || lower.includes("fourth")) return "Final";
     return year;
   };
 
   const filteredMembers = useMemo(() => {
-    return SUB_TEAM_MEMBERS.filter((m) => {
+    return members.filter((m) => {
       const matchesSearch =
         !searchQuery.trim() ||
         m.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
@@ -30,16 +32,16 @@ export default function SubTeamMembers() {
       const badge = getYearBadge(m.year);
       return badge === selectedYearFilter;
     });
-  }, [searchQuery, selectedYearFilter]);
+  }, [members, searchQuery, selectedYearFilter]);
 
   const yearCounts = useMemo(() => {
-    const counts = { all: SUB_TEAM_MEMBERS.length, FY: 0, SY: 0, TY: 0 };
-    SUB_TEAM_MEMBERS.forEach((m) => {
+    const counts = { all: members.length, FY: 0, SY: 0, TY: 0 };
+    members.forEach((m) => {
       const b = getYearBadge(m.year);
       if (counts[b] !== undefined) counts[b]++;
     });
     return counts;
-  }, []);
+  }, [members]);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-paper px-4 pb-16 pt-8 text-ink sm:px-6">
@@ -68,7 +70,7 @@ export default function SubTeamMembers() {
               SELECTION ROSTER / SUB TEAM INTAKE 2026
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-gfg bg-gfg-tint px-3 py-1 font-mono text-xs font-extrabold text-gfg-deep">
-              {SUB_TEAM_MEMBERS.length} Total Members
+              {members.length} Total Members
             </span>
           </div>
 
@@ -134,7 +136,7 @@ export default function SubTeamMembers() {
         {/* Members Count Strip */}
         <div className="mt-6 flex items-center justify-between rounded-xl border-2 border-ink bg-[#1a1e1b] px-4 py-2.5 text-xs font-extrabold tracking-wider text-white uppercase">
           <span>SELECTED SUB-TEAM MEMBERS</span>
-          <span>Showing {filteredMembers.length} of {SUB_TEAM_MEMBERS.length}</span>
+          <span>Showing {filteredMembers.length} of {members.length}</span>
         </div>
 
         {/* Member Cards Grid */}
@@ -143,7 +145,7 @@ export default function SubTeamMembers() {
             const badge = getYearBadge(member.year);
             return (
               <div
-                key={member.name + idx}
+                key={member.id || member.name + idx}
                 className="group flex items-center justify-between overflow-hidden rounded-2xl border-[2.5px] border-ink bg-white p-3.5 shadow-pop-sm transition-all hover:-translate-y-0.5 hover:shadow-pop-ink"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
@@ -157,19 +159,26 @@ export default function SubTeamMembers() {
                   </div>
                 </div>
 
-                <span
-                  className={`shrink-0 rounded-lg border px-2.5 py-1 font-mono text-xs font-extrabold uppercase ${
-                    badge === "FY"
-                      ? "border-sky-500 bg-sky-50 text-sky-800"
-                      : badge === "SY"
-                      ? "border-emerald-600 bg-emerald-50 text-emerald-800"
-                      : badge === "TY"
-                      ? "border-purple-500 bg-purple-50 text-purple-800"
-                      : "border-ink/30 bg-paper text-ink/70"
-                  }`}
-                >
-                  {badge}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {member.isCustom && (
+                    <span className="rounded-md border border-sun bg-amber-50 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-amber-800">
+                      NEW
+                    </span>
+                  )}
+                  <span
+                    className={`rounded-lg border px-2.5 py-1 font-mono text-xs font-extrabold uppercase ${
+                      badge === "FY"
+                        ? "border-sky-500 bg-sky-50 text-sky-800"
+                        : badge === "SY"
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-800"
+                        : badge === "TY"
+                        ? "border-purple-500 bg-purple-50 text-purple-800"
+                        : "border-ink/30 bg-paper text-ink/70"
+                    }`}
+                  >
+                    {badge}
+                  </span>
+                </div>
               </div>
             );
           })}
@@ -178,7 +187,7 @@ export default function SubTeamMembers() {
         {filteredMembers.length === 0 && (
           <div className="mt-8 rounded-2xl border-2 border-dashed border-ink/30 bg-white p-8 text-center">
             <p className="text-sm font-bold text-ink/60">
-              No member matching &ldquo;{searchQuery}&rdquo; in this filter.
+              {loading ? "Loading roster..." : `No member matching "${searchQuery}" in this filter.`}
             </p>
           </div>
         )}
@@ -192,4 +201,3 @@ export default function SubTeamMembers() {
     </main>
   );
 }
-

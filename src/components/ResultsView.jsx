@@ -4,9 +4,10 @@ import confetti from "canvas-confetti";
 import Brand from "./Brand.jsx";
 import { CornerTriangles, DotGrid } from "./Decor.jsx";
 import { RECRUITMENT_INFO, RECRUITMENT_TEAMS } from "../data/recruitmentData.js";
-import { SUB_TEAM_LEADS, SUB_TEAM_MEMBERS } from "../data/subTeamData.js";
+import { useSubTeamData } from "../hooks/useSubTeamData.js";
 
 export default function ResultsView() {
+  const { leads, members } = useSubTeamData();
   const [selectedTeamTab, setSelectedTeamTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] = useState(null);
@@ -33,7 +34,7 @@ export default function ResultsView() {
     let found = null;
 
     // Check Sub Team Leads
-    for (const lead of SUB_TEAM_LEADS) {
+    for (const lead of leads) {
       if (lead.name.toLowerCase().includes(clean)) {
         found = {
           name: lead.name,
@@ -72,7 +73,7 @@ export default function ResultsView() {
 
     // Check Sub Team Members
     if (!found) {
-      for (const member of SUB_TEAM_MEMBERS) {
+      for (const member of members) {
         if (member.name.toLowerCase().includes(clean)) {
           found = {
             name: member.name,
@@ -238,7 +239,7 @@ export default function ResultsView() {
                 : "border-ink/30 bg-white text-ink hover:border-ink shadow-pop-sm"
             }`}
           >
-            ⚡ Sub Teams (10 Leads)
+            ⚡ Sub Teams ({leads.length} Leads)
           </button>
           {RECRUITMENT_TEAMS.map((team) => {
             const isSelected = selectedTeamTab === team.id;
@@ -279,18 +280,18 @@ export default function ResultsView() {
 
                 <div className="flex items-center gap-2">
                   <span className="rounded-full border-2 border-ink bg-gfg px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-pop-sm">
-                    {SUB_TEAM_LEADS.length} Leads Appointed
+                    {leads.length} Leads Appointed
                   </span>
                 </div>
               </div>
 
               {/* Sub-Team Leads Grid */}
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {SUB_TEAM_LEADS.map((lead, idx) => {
+                {leads.map((lead, idx) => {
                   const isPending = lead.status && lead.status.toLowerCase().includes("pending");
                   return (
                     <div
-                      key={lead.name + idx}
+                      key={lead.id || lead.name + idx}
                       className="group flex flex-col justify-between overflow-hidden rounded-2xl border-[2.5px] border-ink bg-white p-4 shadow-pop-sm transition-all hover:-translate-y-0.5 hover:shadow-pop-ink"
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -306,7 +307,12 @@ export default function ResultsView() {
                         </div>
 
                         {/* Role Pill */}
-                        <div className="shrink-0 text-right">
+                        <div className="shrink-0 text-right flex items-center gap-1.5">
+                          {lead.isCustom && (
+                            <span className="rounded-md border border-sun bg-amber-50 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-amber-800">
+                              NEW
+                            </span>
+                          )}
                           <span className="inline-block rounded-lg border-2 border-ink bg-ink px-2.5 py-0.5 font-mono text-xs font-extrabold text-white">
                             {lead.role || "Lead"}
                           </span>
@@ -339,7 +345,7 @@ export default function ResultsView() {
                   <div className="flex items-center gap-2">
                     <span className="text-xl">👥</span>
                     <h4 className="text-base sm:text-lg font-extrabold text-ink">
-                      Sub Team Members List ({SUB_TEAM_MEMBERS.length} Selected)
+                      Sub Team Members List ({members.length} Selected)
                     </h4>
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-ink/70 max-w-xl">
@@ -382,7 +388,7 @@ export default function ResultsView() {
                 </span>
               </div>
 
-              {/* Group Columns (Matches the exact layout of the PDF and uploaded screenshot) */}
+              {/* Group Columns */}
               <div className="mt-8 grid gap-8 md:grid-cols-2">
                 {team.groups.map((group, gIdx) => (
                   <div key={gIdx} className="space-y-4">
