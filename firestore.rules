@@ -31,5 +31,16 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if isAdmin();
     }
+    // Sub team leads: public can read, only admin can create/delete/update
+    match /sub_team_leads/{leadId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Sub team members: public can read, only admin can create/delete/update
+    match /sub_team_members/{memberId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
   }
 }
