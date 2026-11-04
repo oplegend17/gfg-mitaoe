@@ -489,16 +489,6 @@ function Dashboard({ user, onLogout }) {
 
             {/* Quick Actions */}
             <div className="flex flex-wrap items-center gap-2.5">
-              {!isFirebaseSynced && (
-                <button
-                  disabled={migrating}
-                  onClick={migrateAllToFirebase}
-                  className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-ink bg-sun px-4 py-2 text-xs font-extrabold uppercase text-ink shadow-pop-sm hover:bg-amber-300 cursor-pointer disabled:opacity-50"
-                  title="Upload all base records to Firestore database so every record is editable"
-                >
-                  {migrating ? "Saving to Cloud..." : "☁ Save All to Firebase"}
-                </button>
-              )}
               <Link
                 to="/results"
                 target="_blank"
@@ -712,31 +702,22 @@ function Dashboard({ user, onLogout }) {
                           </td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              {lead.isFirebase !== false && (
-                                <button
-                                  onClick={() => setEditingLead(lead)}
-                                  className="rounded-xl border border-ink/30 bg-paper px-2.5 py-1 text-xs font-bold text-ink hover:border-ink hover:bg-white transition-colors cursor-pointer"
-                                >
-                                  Edit
-                                </button>
-                              )}
-                              {lead.isFirebase !== false && (
-                                <button
-                                  onClick={() => {
-                                    if (confirm(`Remove lead "${lead.name}"?`)) {
-                                      removeLead(lead.id);
-                                    }
-                                  }}
-                                  className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
-                                >
-                                  Delete
-                                </button>
-                              )}
-                              {lead.isFirebase === false && (
-                                <span className="font-mono text-[11px] font-bold text-ink/40">
-                                  Base
-                                </span>
-                              )}
+                              <button
+                                onClick={() => setEditingLead(lead)}
+                                className="rounded-xl border border-ink/30 bg-paper px-2.5 py-1 text-xs font-bold text-ink hover:border-ink hover:bg-white transition-colors cursor-pointer"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Remove lead "${lead.name}"?`)) {
+                                    removeLead(lead.id);
+                                  }
+                                }}
+                                className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
+                              >
+                                Delete
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -830,31 +811,22 @@ function Dashboard({ user, onLogout }) {
                           </td>
                           <td className="px-4 py-2.5 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              {member.isFirebase !== false && (
-                                <button
-                                  onClick={() => setEditingMember(member)}
-                                  className="rounded-xl border border-ink/30 bg-paper px-2.5 py-1 text-xs font-bold text-ink hover:border-ink hover:bg-white transition-colors cursor-pointer"
-                                >
-                                  Edit
-                                </button>
-                              )}
-                              {member.isFirebase !== false && (
-                                <button
-                                  onClick={() => {
-                                    if (confirm(`Remove member "${member.name}"?`)) {
-                                      removeMember(member.id);
-                                    }
-                                  }}
-                                  className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
-                                >
-                                  Delete
-                                </button>
-                              )}
-                              {member.isFirebase === false && (
-                                <span className="font-mono text-[11px] font-bold text-ink/40">
-                                  Base
-                                </span>
-                              )}
+                              <button
+                                onClick={() => setEditingMember(member)}
+                                className="rounded-xl border border-ink/30 bg-paper px-2.5 py-1 text-xs font-bold text-ink hover:border-ink hover:bg-white transition-colors cursor-pointer"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Remove member "${member.name}"?`)) {
+                                    removeMember(member.id);
+                                  }
+                                }}
+                                className="rounded-xl border border-alert bg-red-50 px-2.5 py-1 text-xs font-bold text-alert hover:bg-alert hover:text-white transition-colors cursor-pointer"
+                              >
+                                Delete
+                              </button>
                             </div>
                           </td>
                         </tr>

@@ -1,102 +1,65 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   collection,
   addDoc,
   updateDoc,
   deleteDoc,
   doc,
-  getDocs,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
-  writeBatch,
 } from "firebase/firestore";
 import { db } from "../config/firebase.js";
 import { SUB_TEAM_LEADS as STATIC_LEADS, SUB_TEAM_MEMBERS as STATIC_MEMBERS } from "../data/subTeamData.js";
 
 export function useSubTeamData() {
-  const [leads, setLeads] = useState([]);
-  const [members, setMembers] = useState([]);
+  const [firebaseLeads, setFirebaseLeads] = useState([]);
+  const [firebaseMembers, setFirebaseMembers] = useState([]);
+  const [deletedIds, setDeletedIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem("gfg_subteam_deleted_ids");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [migrating, setMigrating] = useState(false);
-  const [isFirebaseSynced, setIsFirebaseSynced] = useState(false);
 
   useEffect(() => {
-    // 1. Real-time listener for sub_team_leads
+    // 1. Listen to Sub Team Leads in Firestore
     const unsubLeads = onSnapshot(
-      query(collection(db, "sub_team_leads"), orderBy("order", "asc")),
+      query(collection(db, "sub_team_leads"), orderBy("createdAt", "asc")),
       (snap) => {
-        if (!snap.empty) {
-          const list = snap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-            isFirebase: true,
-          }));
-          setLeads(list);
-          setIsFirebaseSynced(true);
-        } else {
-          // If Firestore is still empty, show static list
-          setLeads(
-            STATIC_LEADS.map((l, idx) => ({
-              id: `static-lead-${idx}`,
-              order: idx + 1,
-              ...l,
-              isFirebase: false,
-            }))
-          );
-        }
+        const list = snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          isFirestore: true,
+        }));
+        setFirebaseLeads(list);
       },
       (err) => {
-        console.warn("Firestore sub_team_leads:", err.message);
+        console.warn("Firestore sub_team_leads error:", err.message);
         setError(err.message);
-        setLeads(
-          STATIC_LEADS.map((l, idx) => ({
-            id: `static-lead-${idx}`,
-            order: idx + 1,
-            ...l,
-            isFirebase: false,
-          }))
-        );
       }
     );
 
-    // 2. Real-time listener for sub_team_members
+    // 2. Listen to Sub Team Members in Firestore
     const unsubMembers = onSnapshot(
-      query(collection(db, "sub_team_members"), orderBy("srNo", "asc")),
+      query(collection(db, "sub_team_members"), orderBy("createdAt", "asc")),
       (snap) => {
-        if (!snap.empty) {
-          const list = snap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-            isFirebase: true,
-          }));
-          setMembers(list);
-          setLoading(false);
-          setIsFirebaseSynced(true);
-        } else {
-          // If Firestore is still empty, show static members
-          setMembers(
-            STATIC_MEMBERS.map((m) => ({
-              id: `static-member-${m.srNo}`,
-              ...m,
-              isFirebase: false,
-            }))
-          );
-          setLoading(false);
-        }
+        const list = snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          isFirestore: true,
+        }));
+        setFirebaseMembers(list);
+        setLoading(false);
       },
       (err) => {
-        console.warn("Firestore sub_team_members:", err.message);
+        console.warn("Firestore sub_team_members error:", err.message);
         setError(err.message);
-        setMembers(
-          STATIC_MEMBERS.map((m) => ({
-            id: `static-member-${m.srNo}`,
-            ...m,
-            isFirebase: false,
-          }))
-        );
         setLoading(false);
       }
     );
@@ -107,69 +70,96 @@ export function useSubTeamData() {
     };
   }, []);
 
-  // One-click migration: uploads all base records to Firestore so every single item can be edited/deleted
-  const migrateAllToFirebase = useCallback(async () => {
-    setMigrating(true);
-    try {
-      // Migrate Leads if not populated
-      const leadsSnap = await getDocs(collection(db, "sub_team_leads"));
-      if (leadsSnap.empty) {
-        let batch = writeBatch(db);
-        STATIC_LEADS.forEach((l, idx) => {
-          const ref = doc(collection(db, "sub_team_leads"));
-          batch.set(ref, {
-            order: idx + 1,
-            name: l.name,
-            domain: l.domain,
-            role: l.role || "Lead",
-            year: l.year || "Second Year",
-            branch: l.branch || "",
-            status: l.status || "confirmed",
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          });
-        });
-        await batch.commit();
+  // Sync deleted IDs to localStorage so deleted base records stay deleted
+  const markAsDeleted = useCallback((id) => {
+    setDeletedIds((prev) => {
+      const next = Array.from(new Set([...prev, id]));
+      try {
+        localStorage.setItem("gfg_subteam_deleted_ids", JSON.stringify(next));
+      } catch (e) {
+        console.warn(e);
       }
-
-      // Migrate Members in batches of 400
-      const membersSnap = await getDocs(collection(db, "sub_team_members"));
-      if (membersSnap.empty) {
-        let batch = writeBatch(db);
-        let count = 0;
-        for (let i = 0; i < STATIC_MEMBERS.length; i++) {
-          const m = STATIC_MEMBERS[i];
-          const ref = doc(collection(db, "sub_team_members"));
-          batch.set(ref, {
-            srNo: m.srNo || i + 1,
-            name: m.name,
-            year: m.year || "Second Year",
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          });
-          count++;
-          if (count === 400) {
-            await batch.commit();
-            batch = writeBatch(db);
-            count = 0;
-          }
-        }
-        if (count > 0) {
-          await batch.commit();
-        }
-      }
-      setIsFirebaseSynced(true);
-    } finally {
-      setMigrating(false);
-    }
+      return next;
+    });
   }, []);
+
+  // COMBINE LEADS: Base Excel Leads (10) + Any newly added Leads in Firestore
+  const leads = useMemo(() => {
+    const list = [];
+    const seenNames = new Set();
+
+    // 1. Add base static leads (if not deleted or overridden)
+    STATIC_LEADS.forEach((l, idx) => {
+      const baseId = `base-lead-${idx}`;
+      if (!deletedIds.includes(baseId)) {
+        list.push({
+          id: baseId,
+          order: idx + 1,
+          ...l,
+          isBase: true,
+        });
+        seenNames.add(l.name.toLowerCase().trim());
+      }
+    });
+
+    // 2. Add Firestore leads
+    firebaseLeads.forEach((fl, idx) => {
+      if (!deletedIds.includes(fl.id)) {
+        list.push({
+          id: fl.id,
+          order: list.length + 1,
+          name: fl.name,
+          domain: fl.domain || "Technical Track",
+          role: fl.role || "Lead",
+          year: fl.year || "Second Year",
+          branch: fl.branch || "",
+          status: fl.status || "confirmed",
+          isBase: false,
+        });
+      }
+    });
+
+    return list;
+  }, [firebaseLeads, deletedIds]);
+
+  // COMBINE MEMBERS: All 74 Base Excel Members ALWAYS PRESERVED + Any newly added members in Firestore
+  const members = useMemo(() => {
+    const list = [];
+
+    // 1. Base static members (all 74 from Sub Team.xlsx)
+    STATIC_MEMBERS.forEach((m) => {
+      const baseId = `base-member-${m.srNo}`;
+      if (!deletedIds.includes(baseId)) {
+        list.push({
+          id: baseId,
+          srNo: list.length + 1,
+          name: m.name,
+          year: m.year,
+          isBase: true,
+        });
+      }
+    });
+
+    // 2. Newly added members in Firestore
+    firebaseMembers.forEach((fm) => {
+      if (!deletedIds.includes(fm.id)) {
+        list.push({
+          id: fm.id,
+          srNo: list.length + 1,
+          name: fm.name,
+          year: fm.year || "Second Year",
+          isBase: false,
+        });
+      }
+    });
+
+    return list;
+  }, [firebaseMembers, deletedIds]);
 
   // Add new Sub Team Lead
   const addLead = useCallback(async ({ domain, role, name, year, branch, status }) => {
     if (!name?.trim()) throw new Error("Lead name is required");
-    const nextOrder = leads.length + 1;
     await addDoc(collection(db, "sub_team_leads"), {
-      order: nextOrder,
       domain: domain?.trim() || "Technical Track",
       role: role?.trim() || "Lead",
       name: name.trim(),
@@ -179,57 +169,85 @@ export function useSubTeamData() {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
-  }, [leads.length]);
+  }, []);
 
-  // Update existing Sub Team Lead
+  // Update Sub Team Lead
   const updateLead = useCallback(async (id, data) => {
     if (!id) throw new Error("Lead ID is required");
+    if (id.startsWith("base-lead-")) {
+      // Save override directly to Firestore
+      await addDoc(collection(db, "sub_team_leads"), {
+        domain: data.domain,
+        role: data.role,
+        name: data.name,
+        year: data.year,
+        branch: data.branch,
+        status: data.status,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      markAsDeleted(id);
+      return;
+    }
     await updateDoc(doc(db, "sub_team_leads", id), {
       ...data,
       updatedAt: serverTimestamp(),
     });
-  }, []);
+  }, [markAsDeleted]);
 
   // Delete Sub Team Lead
   const removeLead = useCallback(async (id) => {
+    if (id.startsWith("base-lead-")) {
+      markAsDeleted(id);
+      return;
+    }
     await deleteDoc(doc(db, "sub_team_leads", id));
-  }, []);
+  }, [markAsDeleted]);
 
   // Add new Sub Team Member
   const addMember = useCallback(async ({ name, year }) => {
     if (!name?.trim()) throw new Error("Member name is required");
-    const nextSrNo = members.length + 1;
     await addDoc(collection(db, "sub_team_members"), {
-      srNo: nextSrNo,
       name: name.trim(),
       year: year?.trim() || "Second Year",
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
-  }, [members.length]);
+  }, []);
 
-  // Update existing Sub Team Member
+  // Update Sub Team Member
   const updateMember = useCallback(async (id, data) => {
     if (!id) throw new Error("Member ID is required");
+    if (id.startsWith("base-member-")) {
+      await addDoc(collection(db, "sub_team_members"), {
+        name: data.name,
+        year: data.year,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      markAsDeleted(id);
+      return;
+    }
     await updateDoc(doc(db, "sub_team_members", id), {
       ...data,
       updatedAt: serverTimestamp(),
     });
-  }, []);
+  }, [markAsDeleted]);
 
   // Delete Sub Team Member
   const removeMember = useCallback(async (id) => {
+    if (id.startsWith("base-member-")) {
+      markAsDeleted(id);
+      return;
+    }
     await deleteDoc(doc(db, "sub_team_members", id));
-  }, []);
+  }, [markAsDeleted]);
 
   return {
     leads,
     members,
     loading,
     error,
-    migrating,
-    isFirebaseSynced,
-    migrateAllToFirebase,
     addLead,
     updateLead,
     removeLead,
